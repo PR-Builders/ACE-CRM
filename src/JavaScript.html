@@ -4,6 +4,18 @@
 
   var currentDetailLeadId = null;
 
+  var STAGE_COLORS = {
+    'Leads': '#94a3b8', 'Site Visit': '#60a5fa', 'Estimating': '#38bdf8',
+    'Engineering': '#a78bfa', 'Proposal': '#fbbf24', 'Contract': '#fb923c',
+    'Review': '#34d399', 'Follow Up': '#4ade80', 'Close Out': '#2f6f4f'
+  };
+
+  function initials(name) {
+    if (!name) return '?';
+    var parts = String(name).trim().split(/\s+/);
+    return ((parts[0][0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+  }
+
   document.querySelectorAll('.tab-btn').forEach(function (btn) {
     btn.addEventListener('click', function () { switchView(btn.dataset.view); });
   });
@@ -45,20 +57,26 @@
       var cards = board[stage] || [];
       var col = document.createElement('div');
       col.className = 'column';
-      col.innerHTML = '<div class="column-header"><span>' + stage + '</span><span>' + cards.length + '</span></div>' +
+      col.innerHTML =
+        '<div class="column-accent" style="background:' + (STAGE_COLORS[stage] || '#94a3b8') + '"></div>' +
+        '<div class="column-header"><span class="stage-name">' + escapeHtml(stage) + '</span>' +
+        '<span class="count-pill">' + cards.length + '</span></div>' +
         '<div class="column-body"></div>';
       var body = col.querySelector('.column-body');
       if (!cards.length) {
-        body.innerHTML = '<div class="empty-state" style="padding:10px;">No leads</div>';
+        body.innerHTML = '<div class="empty-state"><span class="empty-icon">&#9679;</span>No leads in this stage</div>';
       }
       cards.forEach(function (card) {
         var div = document.createElement('div');
         div.className = 'card';
         div.innerHTML =
-          '<div class="name">' + escapeHtml(card.Name || '(no name)') + '</div>' +
-          '<div>' + escapeHtml(card.Phone || '') + '</div>' +
+          '<div class="card-top">' +
+            '<div class="avatar">' + escapeHtml(initials(card.Name)) + '</div>' +
+            '<div><div class="name">' + escapeHtml(card.Name || '(no name)') + '</div>' +
+            '<div class="phone">' + escapeHtml(card.Phone || '') + '</div></div>' +
+          '</div>' +
           '<div class="meta"><span class="badge">' + escapeHtml(card.Source || '') + '</span>' +
-          '<span class="' + (card.daysInStage > 7 ? 'days-warn' : '') + '">' + card.daysInStage + 'd in stage</span></div>';
+          '<span class="days-tag' + (card.daysInStage > 7 ? ' days-warn' : '') + '">' + card.daysInStage + 'd in stage</span></div>';
         div.addEventListener('click', function () { openDetail(card['Lead ID']); });
         body.appendChild(div);
       });
