@@ -1,0 +1,83 @@
+<?!= include('Stylesheet'); ?>
+
+<header class="app-header">
+  <h1>Ace Septic &amp; Excavation — CRM</h1>
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="pipeline">Pipeline</button>
+    <button class="tab-btn" data-view="new-lead">New Lead</button>
+    <button class="tab-btn" data-view="reports">Reports</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Pipeline -->
+  <section id="view-pipeline" class="view active">
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- New Lead -->
+  <section id="view-new-lead" class="view">
+    <div class="card-panel">
+      <h2 style="margin-top:0;">New Lead (manual entry)</h2>
+      <form id="new-lead-form">
+        <div class="field"><label>Name *</label><input name="Name" required></div>
+        <div class="field"><label>Email *</label><input type="email" name="Email" required></div>
+        <div class="field"><label>Phone *</label><input name="Phone" required></div>
+        <div class="field"><label>Address</label><input name="Address"></div>
+        <div class="field">
+          <label>Source</label>
+          <select name="Source">
+            <?!= (function(){var o='';SOURCES.forEach(function(s){o+='<option value="'+s+'">'+s+'</option>';});return o;})(); ?>
+          </select>
+        </div>
+        <div class="field"><label>Source Detail</label><input name="Source Detail" placeholder="Ad campaign, referrer name, sign location..."></div>
+        <div class="field">
+          <label>Contact Method</label>
+          <select name="Contact Method">
+            <?!= (function(){var o='';CONTACT_METHODS.forEach(function(s){o+='<option value="'+s+'">'+s+'</option>';});return o;})(); ?>
+          </select>
+        </div>
+        <div class="field"><label>Assigned To</label><input name="Assigned To"></div>
+        <div class="field"><label>Notes</label><textarea name="Notes"></textarea></div>
+        <button type="submit" class="primary">Create Lead</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Reports -->
+  <section id="view-reports" class="view">
+    <div id="reports-container"><div class="empty-state">Loading reports…</div></div>
+  </section>
+</main>
+
+<!-- Lead detail modal -->
+<div class="modal-backdrop" id="detail-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="detail-name">Lead</h2>
+      <button class="close-x" id="detail-close">&times;</button>
+    </div>
+    <div id="detail-body"></div>
+  </div>
+</div>
+
+<!-- Not Qualified reason modal -->
+<div class="modal-backdrop" id="nq-backdrop">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header"><h2>Lost Reason</h2><button class="close-x" id="nq-close">&times;</button></div>
+    <div class="field">
+      <label>Why is this lead Not Qualified?</label>
+      <select id="nq-reason">
+        <?!= (function(){var o='';LOST_REASONS.forEach(function(r){o+='<option value="'+r+'">'+r+'</option>';});return o;})(); ?>
+      </select>
+    </div>
+    <button class="primary" id="nq-confirm">Confirm</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var STAGES = <?!= JSON.stringify(STAGES); ?>;
+</script>
+<?!= include('JavaScript'); ?>

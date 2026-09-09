@@ -1,0 +1,32 @@
+<!--
+  TCPA "submit-button disclosure" pattern for the website contact form.
+  Place this immediately below the submit button. Clicking Submit is the
+  affirmative consent action — there's no separate opt-in checkbox to log,
+  so the CRM records SMS Consent = "Yes" plus a timestamp and this
+  disclosure's version (see SMS_DISCLOSURE_VERSION in Script Properties)
+  the moment the form is submitted. Update the version string any time the
+  wording below changes.
+-->
+<form data-ace-lead-form action="https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec" method="POST">
+  <input type="hidden" name="disclosure_version" value="v1">
+
+  <label>Name <input type="text" name="name" required></label>
+  <label>Email <input type="email" name="email" required></label>
+  <label>Phone <input type="tel" name="phone" required></label>
+  <label>Project Address <input type="text" name="address"></label>
+  <label>How can we help? <textarea name="notes"></textarea></label>
+
+  <button type="submit">Submit</button>
+
+  <p class="sms-disclosure" style="font-size:12px;color:#555;max-width:480px;">
+    By clicking Submit, you agree that Ace Septic &amp; Excavation may call
+    and text you (including by autodialer) about your project at the
+    number provided, even if it's on a do-not-call list. Message and data
+    rates may apply; message frequency varies. Consent is not a condition
+    of purchase — you can reach us directly at
+    <a href="tel:+19705550000">(970) 555-0000</a> instead. Reply STOP to
+    any text to opt out, or contact us to opt out of calls. Calls may be
+    recorded for quality purposes. See our
+    <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.
+  </p>
+</form>

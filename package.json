@@ -1,0 +1,18 @@
+{
+  "name": "ace-septic-crm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ace Septic & Excavation CRM — Google Apps Script + Sheets backend, HTML/JS frontend.",
+  "scripts": {
+    "login": "clasp login",
+    "create": "clasp create --type webapp --title \"Ace Septic & Excavation CRM\" --rootDir src",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "open": "clasp open",
+    "deploy": "clasp deploy",
+    "logs": "clasp logs"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  }
+}

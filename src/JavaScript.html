@@ -1,0 +1,252 @@
+<script>
+(function () {
+  'use strict';
+
+  var currentDetailLeadId = null;
+
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { switchView(btn.dataset.view); });
+  });
+
+  function switchView(view) {
+    document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.view === view); });
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.toggle('active', v.id === 'view-' + view); });
+    if (view === 'pipeline') loadPipeline();
+    if (view === 'reports') loadReports();
+  }
+
+  function showToast(message, isError) {
+    var t = document.getElementById('toast');
+    t.textContent = message;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(function () { t.className = 'toast'; }, 3200);
+  }
+
+  function fmtMoney(v) {
+    if (!v && v !== 0) return '';
+    return '$' + Number(v).toLocaleString();
+  }
+  function fmtDate(v) {
+    if (!v) return '';
+    var d = new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleDateString();
+  }
+
+  // ---------- Pipeline ----------
+
+  function loadPipeline() {
+    google.script.run.withSuccessHandler(renderBoard).withFailureHandler(onError).getPipelineData();
+  }
+
+  function renderBoard(board) {
+    var el = document.getElementById('board');
+    el.innerHTML = '';
+    STAGES.forEach(function (stage) {
+      var cards = board[stage] || [];
+      var col = document.createElement('div');
+      col.className = 'column';
+      col.innerHTML = '<div class="column-header"><span>' + stage + '</span><span>' + cards.length + '</span></div>' +
+        '<div class="column-body"></div>';
+      var body = col.querySelector('.column-body');
+      if (!cards.length) {
+        body.innerHTML = '<div class="empty-state" style="padding:10px;">No leads</div>';
+      }
+      cards.forEach(function (card) {
+        var div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML =
+          '<div class="name">' + escapeHtml(card.Name || '(no name)') + '</div>' +
+          '<div>' + escapeHtml(card.Phone || '') + '</div>' +
+          '<div class="meta"><span class="badge">' + escapeHtml(card.Source || '') + '</span>' +
+          '<span class="' + (card.daysInStage > 7 ? 'days-warn' : '') + '">' + card.daysInStage + 'd in stage</span></div>';
+        div.addEventListener('click', function () { openDetail(card['Lead ID']); });
+        body.appendChild(div);
+      });
+      el.appendChild(col);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---------- Lead detail ----------
+
+  function openDetail(leadId) {
+    currentDetailLeadId = leadId;
+    google.script.run.withSuccessHandler(renderDetail).withFailureHandler(onError).getLead(leadId);
+  }
+
+  function renderDetail(data) {
+    var lead = data.lead;
+    document.getElementById('detail-name').textContent = lead.Name || '(no name — placeholder call lead)';
+    var body = document.getElementById('detail-body');
+
+    var stageButtons = STAGES.map(function (s) {
+      return '<button data-stage="' + s + '" class="' + (s === lead.Stage ? 'current' : '') + '">' + s + '</button>';
+    }).join('');
+
+    var smsConsentNote = lead['SMS Consent'] === 'Yes'
+      ? '<span style="color:#2f6f4f;">Yes</span>'
+      : '<span style="color:#b3261e;">' + escapeHtml(lead['SMS Consent'] || 'Not Asked') + '</span> ' +
+        '<button class="secondary" id="btn-verbal-consent" style="margin-left:6px;padding:3px 8px;font-size:11px;">Confirm verbal consent</button>';
+
+    body.innerHTML =
+      '<div><strong>Phone:</strong> ' + escapeHtml(lead.Phone || '') + ' &nbsp; <strong>Email:</strong> ' + escapeHtml(lead.Email || '') + '</div>' +
+      '<div><strong>Address:</strong> ' + escapeHtml(lead.Address || '') + '</div>' +
+      '<div><strong>Source:</strong> ' + escapeHtml(lead.Source || '') + (lead['Source Detail'] ? ' — ' + escapeHtml(lead['Source Detail']) : '') + '</div>' +
+      '<div><strong>Status:</strong> ' + escapeHtml(lead.Status) + (lead['Lost Reason'] ? ' (' + escapeHtml(lead['Lost Reason']) + ')' : '') + '</div>' +
+      '<div><strong>SMS Consent:</strong> ' + smsConsentNote + '</div>' +
+      '<div class="stage-row">' + stageButtons + '</div>' +
+      '<div class="field"><label>Estimated Value</label><input id="f-estimated" value="' + (lead['Estimated Value'] || '') + '"></div>' +
+      '<div class="field"><label>Actual Value (set at Close Out)</label><input id="f-actual" value="' + (lead['Actual Value'] || '') + '"></div>' +
+      '<div class="field"><label>Next Follow-Up Date</label><input type="date" id="f-followup" value="' + (lead['Next Follow-Up Date'] ? new Date(lead['Next Follow-Up Date']).toISOString().slice(0,10) : '') + '"></div>' +
+      '<div class="field"><label>Add Note</label><textarea id="f-note" placeholder="Add a note..."></textarea></div>' +
+      '<button class="secondary" id="btn-save-fields">Save</button>' +
+      '<div class="actions-row">' +
+        '<button class="warn" id="btn-not-qualified">Not Qualified</button>' +
+        '<button class="danger" id="btn-spam">Spam</button>' +
+      '</div>' +
+      '<div class="activity-log">' + renderActivities(data.activities) + '</div>';
+
+    body.querySelectorAll('.stage-row button').forEach(function (btn) {
+      btn.addEventListener('click', function () { moveStage(leadId, btn.dataset.stage); });
+    });
+    var verbalBtn = document.getElementById('btn-verbal-consent');
+    if (verbalBtn) verbalBtn.addEventListener('click', function () { confirmVerbalConsent(leadId); });
+    document.getElementById('btn-save-fields').addEventListener('click', function () { saveFields(leadId); });
+    document.getElementById('btn-not-qualified').addEventListener('click', openNotQualifiedModal);
+    document.getElementById('btn-spam').addEventListener('click', function () { markSpam(leadId); });
+
+    document.getElementById('detail-backdrop').classList.add('active');
+  }
+
+  function renderActivities(activities) {
+    if (!activities.length) return '<div class="empty-state">No activity yet.</div>';
+    return activities.map(function (a) {
+      return '<div class="activity-item"><span class="type">' + escapeHtml(a.Type) + '</span>' +
+        '<span class="ts">' + fmtDate(a.Timestamp) + '</span><div>' + escapeHtml(a.Detail || '') + '</div></div>';
+    }).join('');
+  }
+
+  function moveStage(leadId, stage) {
+    google.script.run.withSuccessHandler(function () {
+      showToast('Moved to ' + stage);
+      openDetail(leadId);
+      loadPipeline();
+    }).withFailureHandler(onError).updateLeadStage(leadId, stage, '');
+  }
+
+  function confirmVerbalConsent(leadId) {
+    google.script.run.withSuccessHandler(function () {
+      showToast('SMS consent recorded');
+      openDetail(leadId);
+    }).withFailureHandler(onError).setSmsConsentVerbal(leadId, '');
+  }
+
+  function saveFields(leadId) {
+    var fields = {
+      'Estimated Value': document.getElementById('f-estimated').value,
+      'Actual Value': document.getElementById('f-actual').value,
+      'Next Follow-Up Date': document.getElementById('f-followup').value
+    };
+    var note = document.getElementById('f-note').value.trim();
+    if (note) fields.Notes = note;
+    google.script.run.withSuccessHandler(function () {
+      showToast('Saved');
+      openDetail(leadId);
+      loadPipeline();
+    }).withFailureHandler(onError).updateLeadFields(leadId, fields, '');
+  }
+
+  function markSpam(leadId) {
+    if (!confirm('Mark this lead as Spam?')) return;
+    google.script.run.withSuccessHandler(function () {
+      showToast('Marked as Spam');
+      closeDetail();
+      loadPipeline();
+    }).withFailureHandler(onError).flagSpam(leadId, '');
+  }
+
+  function openNotQualifiedModal() {
+    document.getElementById('nq-backdrop').classList.add('active');
+  }
+  document.getElementById('nq-close').addEventListener('click', function () {
+    document.getElementById('nq-backdrop').classList.remove('active');
+  });
+  document.getElementById('nq-confirm').addEventListener('click', function () {
+    var reason = document.getElementById('nq-reason').value;
+    google.script.run.withSuccessHandler(function () {
+      showToast('Marked Not Qualified');
+      document.getElementById('nq-backdrop').classList.remove('active');
+      closeDetail();
+      loadPipeline();
+    }).withFailureHandler(onError).flagNotQualified(currentDetailLeadId, reason, '');
+  });
+
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  function closeDetail() { document.getElementById('detail-backdrop').classList.remove('active'); }
+
+  // ---------- New Lead ----------
+
+  document.getElementById('new-lead-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = e.target;
+    var data = {};
+    new FormData(form).forEach(function (value, key) { data[key] = value; });
+    google.script.run.withSuccessHandler(function () {
+      showToast('Lead created');
+      form.reset();
+      switchView('pipeline');
+      document.querySelector('[data-view="pipeline"]').classList.add('active');
+      document.querySelector('[data-view="new-lead"]').classList.remove('active');
+    }).withFailureHandler(onError).createLead(data, false);
+  });
+
+  // ---------- Reports ----------
+
+  function loadReports() {
+    google.script.run.withSuccessHandler(renderReports).withFailureHandler(onError).getSourceReport();
+  }
+
+  function renderReports(report) {
+    var el = document.getElementById('reports-container');
+    el.innerHTML =
+      '<div class="section-title">By Source</div>' + groupTable(report.bySource) +
+      '<div class="section-title">By Campaign / Source Detail</div>' + groupTable(report.byCampaign) +
+      '<div class="section-title">By UTM Source (platform)</div>' + groupTable(report.byUtmSource) +
+      '<div class="section-title">Lost Reasons (Not Qualified)</div>' + countTable(report.lostReasons) +
+      '<div class="section-title">Totals</div>' +
+      '<p>Total leads: ' + report.totals.leadCount + ' &nbsp; Closed: ' + report.totals.closedCount +
+      ' &nbsp; Total Actual Value: ' + fmtMoney(report.totals.totalActualValue) + '</p>';
+  }
+
+  function groupTable(groups) {
+    var keys = Object.keys(groups);
+    if (!keys.length) return '<div class="empty-state">No data yet.</div>';
+    var rows = keys.map(function (key) {
+      var g = groups[key];
+      return '<tr><td>' + escapeHtml(key) + '</td><td>' + g.total + '</td><td>' + g.active + '</td><td>' + g.spam +
+        '</td><td>' + g.notQualified + '</td><td>' + g.closeOutCount + '</td><td>' + g.conversionRate + '%</td>' +
+        '<td>' + fmtMoney(g.totalActualValue) + '</td></tr>';
+    }).join('');
+    return '<table class="report-table"><thead><tr><th>Name</th><th>Total</th><th>Active</th><th>Spam</th>' +
+      '<th>Not Qualified</th><th>Closed Out</th><th>Conv. Rate</th><th>Total Actual Value</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function countTable(counts) {
+    var keys = Object.keys(counts);
+    if (!keys.length) return '<div class="empty-state">No Not Qualified leads yet.</div>';
+    var rows = keys.map(function (key) { return '<tr><td>' + escapeHtml(key) + '</td><td>' + counts[key] + '</td></tr>'; }).join('');
+    return '<table class="report-table"><thead><tr><th>Reason</th><th>Count</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function onError(err) {
+    showToast(err.message || String(err), true);
+  }
+
+  loadPipeline();
+})();
+</script>

@@ -1,0 +1,3 @@
+# Patterns are relative to rootDir ("src") per .clasp.json.
+**/node_modules/**
+**/.DS_Store
