@@ -26,6 +26,7 @@
     document.querySelectorAll('.view').forEach(function (v) { v.classList.toggle('active', v.id === 'view-' + view); });
     if (view === 'pipeline') loadPipeline();
     if (view === 'reports') loadReports();
+    if (view === 'field-log') loadFieldLog();
   }
 
   function showToast(message, isError) {
@@ -261,6 +262,111 @@
     var rows = keys.map(function (key) { return '<tr><td>' + escapeHtml(key) + '</td><td>' + counts[key] + '</td></tr>'; }).join('');
     return '<table class="report-table"><thead><tr><th>Reason</th><th>Count</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
+
+  // ---------- Field Log ----------
+
+  var FL_FIELDS = [
+    'customer', 'address', 'scopeOfWork', 'date', 'crew', 'county', 'soil', 'serviceType', 'status',
+    'photoTaken', 'photoUploaded', 'gmb', 'ig',
+    'vidHook', 'vidProblem', 'vidProcess', 'vidChallenge', 'vidResult',
+    'eduTopic', 'eduPoints',
+    'csProblem', 'csSolution', 'csTechnical', 'csChallenges', 'csEquipment', 'csLocal', 'csLinks'
+  ];
+  var FL_CHECKBOX_FIELDS = ['photoTaken', 'photoUploaded', 'gmb', 'ig'];
+
+  document.querySelectorAll('#field-log-form .accordion-header').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      btn.closest('.accordion-section').classList.toggle('open');
+    });
+  });
+
+  function newTicketId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'fl-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+  }
+
+  function loadFieldLog() {
+    document.getElementById('fl-form-view').hidden = true;
+    document.getElementById('fl-list-view').hidden = false;
+    google.script.run.withSuccessHandler(renderFieldLogList).withFailureHandler(onError).getFieldLogEntries();
+  }
+
+  function renderFieldLogList(entries) {
+    var el = document.getElementById('fl-entries-list');
+    if (!entries.length) {
+      el.innerHTML = '<div class="empty-state">No field log entries yet. Tap "New Entry" after a job to capture photos, video, and case study material.</div>';
+      return;
+    }
+    el.innerHTML = entries.map(function (entry) {
+      var statusClass = entry.status === 'Complete' ? 'complete' : 'in-progress';
+      return '<div class="fl-entry-card" data-ticket="' + escapeHtml(entry.ticketId) + '">' +
+        '<div class="fl-entry-top">' +
+          '<span class="fl-entry-customer">' + escapeHtml(entry.customer || '(no customer name)') + '</span>' +
+          '<span class="fl-status-pill ' + statusClass + '">' + escapeHtml(entry.status) + '</span>' +
+        '</div>' +
+        '<div class="fl-entry-meta">' + escapeHtml(entry.serviceType || '') +
+          (entry.date ? ' &middot; ' + escapeHtml(entry.date) : '') +
+          (entry.address ? ' &middot; ' + escapeHtml(entry.address) : '') + '</div>' +
+      '</div>';
+    }).join('');
+    el.querySelectorAll('.fl-entry-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        var entry = entries.filter(function (e) { return e.ticketId === card.dataset.ticket; })[0];
+        openFieldLogEntry(entry);
+      });
+    });
+  }
+
+  function resetFieldLogForm() {
+    var form = document.getElementById('field-log-form');
+    form.reset();
+    document.getElementById('fl-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('fl-status').value = 'In Progress';
+    document.querySelectorAll('#field-log-form .accordion-section').forEach(function (s, i) {
+      s.classList.toggle('open', i === 0);
+    });
+  }
+
+  function openFieldLogEntry(entry) {
+    resetFieldLogForm();
+    document.getElementById('fl-ticketId').value = entry.ticketId;
+    document.getElementById('fl-form-title').textContent = entry.customer || 'Job Entry';
+    FL_FIELDS.forEach(function (key) {
+      var input = document.getElementById('fl-' + key);
+      if (!input) return;
+      if (FL_CHECKBOX_FIELDS.indexOf(key) !== -1) input.checked = !!entry[key];
+      else input.value = entry[key] || '';
+    });
+    showFieldLogForm();
+  }
+
+  function showFieldLogForm() {
+    document.getElementById('fl-list-view').hidden = true;
+    document.getElementById('fl-form-view').hidden = false;
+  }
+
+  document.getElementById('fl-new-entry-btn').addEventListener('click', function () {
+    resetFieldLogForm();
+    document.getElementById('fl-ticketId').value = newTicketId();
+    document.getElementById('fl-form-title').textContent = 'New Job Entry';
+    showFieldLogForm();
+  });
+
+  document.getElementById('fl-back-btn').addEventListener('click', loadFieldLog);
+
+  document.getElementById('field-log-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var entry = { ticketId: document.getElementById('fl-ticketId').value };
+    FL_FIELDS.forEach(function (key) {
+      var input = document.getElementById('fl-' + key);
+      if (!input) return;
+      entry[key] = FL_CHECKBOX_FIELDS.indexOf(key) !== -1 ? input.checked : input.value;
+    });
+    google.script.run.withSuccessHandler(function () {
+      showToast('Entry saved');
+      loadFieldLog();
+    }).withFailureHandler(onError).saveFieldLogEntry(entry);
+  });
 
   function onError(err) {
     showToast(err.message || String(err), true);

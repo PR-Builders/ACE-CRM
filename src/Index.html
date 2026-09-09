@@ -57,6 +57,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
         <span>Reports</span>
       </button>
+      <button class="tab-btn nav-btn" data-view="field-log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg>
+        <span>Field Log</span>
+      </button>
     </nav>
     <div class="sidebar-footer">Ace Septic &amp; Excavation CRM</div>
   </aside>
@@ -107,6 +111,107 @@
       <section id="view-reports" class="view">
         <div class="reports-scroll" id="reports-container"><div class="empty-state">Loading reports…</div></div>
       </section>
+
+      <!-- Field Log -->
+      <section id="view-field-log" class="view">
+        <div id="fl-list-view">
+          <div class="fl-list-header">
+            <h2>Field Log</h2>
+            <button class="primary" id="fl-new-entry-btn">+ New Entry</button>
+          </div>
+          <div id="fl-entries-list"><div class="empty-state">Loading entries…</div></div>
+        </div>
+
+        <div id="fl-form-view" hidden>
+          <div class="fl-list-header">
+            <h2 id="fl-form-title">New Job Entry</h2>
+            <button class="secondary" id="fl-back-btn">&larr; Back to list</button>
+          </div>
+
+          <form id="field-log-form">
+            <input type="hidden" id="fl-ticketId">
+
+            <div class="accordion-section open" data-section="job">
+              <button type="button" class="accordion-header"><span>Job Info</span><span class="chev">&#9662;</span></button>
+              <div class="accordion-body">
+                <div class="field"><label>Customer</label><input id="fl-customer"></div>
+                <div class="field"><label>Address</label><input id="fl-address"></div>
+                <div class="field"><label>Scope of Work</label><textarea id="fl-scopeOfWork" placeholder="What did the crew do on this job?"></textarea></div>
+                <div class="field"><label>Date</label><input type="date" id="fl-date"></div>
+                <div class="field"><label>Crew</label><input id="fl-crew" placeholder="Names of crew on site"></div>
+                <div class="field"><label>County</label><input id="fl-county" placeholder="e.g. Larimer County"></div>
+                <div class="field"><label>Soil Conditions</label><input id="fl-soil" placeholder="e.g. clay, sandy, rocky"></div>
+                <div class="field">
+                  <label>Service Type</label>
+                  <select id="fl-serviceType">
+                    <option>Septic Install</option>
+                    <option>Septic Repair</option>
+                    <option>Septic Pumping</option>
+                    <option>Septic Inspection</option>
+                    <option>Excavation</option>
+                    <option>Grading &amp; Site Work</option>
+                    <option>Utility Trenching</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Status</label>
+                  <select id="fl-status">
+                    <option>In Progress</option>
+                    <option>Complete</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-section" data-section="photos">
+              <button type="button" class="accordion-header"><span>Photos &amp; Social</span><span class="chev">&#9662;</span></button>
+              <div class="accordion-body">
+                <label class="checkbox-row"><input type="checkbox" id="fl-photoTaken"> Photo taken on site</label>
+                <label class="checkbox-row"><input type="checkbox" id="fl-photoUploaded"> Photo uploaded to shared drive</label>
+                <label class="checkbox-row"><input type="checkbox" id="fl-gmb"> Posted to Google Business Profile</label>
+                <label class="checkbox-row"><input type="checkbox" id="fl-ig"> Posted to Instagram</label>
+              </div>
+            </div>
+
+            <div class="accordion-section" data-section="video">
+              <button type="button" class="accordion-header"><span>Video Content Prompts</span><span class="chev">&#9662;</span></button>
+              <div class="accordion-body">
+                <div class="field"><label>Hook</label><textarea id="fl-vidHook" placeholder="What's the attention-grabbing opener?"></textarea></div>
+                <div class="field"><label>Problem</label><textarea id="fl-vidProblem"></textarea></div>
+                <div class="field"><label>Process</label><textarea id="fl-vidProcess"></textarea></div>
+                <div class="field"><label>Challenge</label><textarea id="fl-vidChallenge"></textarea></div>
+                <div class="field"><label>Result</label><textarea id="fl-vidResult"></textarea></div>
+              </div>
+            </div>
+
+            <div class="accordion-section" data-section="edu">
+              <button type="button" class="accordion-header"><span>Educational Content</span><span class="chev">&#9662;</span></button>
+              <div class="accordion-body">
+                <div class="field"><label>Topic</label><input id="fl-eduTopic"></div>
+                <div class="field"><label>Key Points</label><textarea id="fl-eduPoints"></textarea></div>
+              </div>
+            </div>
+
+            <div class="accordion-section" data-section="cs">
+              <button type="button" class="accordion-header"><span>Case Study</span><span class="chev">&#9662;</span></button>
+              <div class="accordion-body">
+                <div class="field"><label>Problem</label><textarea id="fl-csProblem"></textarea></div>
+                <div class="field"><label>Solution</label><textarea id="fl-csSolution"></textarea></div>
+                <div class="field"><label>Technical Details</label><textarea id="fl-csTechnical"></textarea></div>
+                <div class="field"><label>Challenges</label><textarea id="fl-csChallenges"></textarea></div>
+                <div class="field"><label>Equipment Used</label><textarea id="fl-csEquipment"></textarea></div>
+                <div class="field"><label>Local Relevance</label><textarea id="fl-csLocal" placeholder="Why this matters to Northern Colorado customers"></textarea></div>
+                <div class="field"><label>Links</label><input id="fl-csLinks" placeholder="Links to photos/videos for reference"></div>
+              </div>
+            </div>
+
+            <div class="fl-save-bar">
+              <button type="submit" class="primary">Save Entry</button>
+            </div>
+          </form>
+        </div>
+      </section>
     </main>
   </div>
 </div>
@@ -125,6 +230,10 @@
     <button class="tab-btn nav-btn" data-view="reports">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
       <span>Reports</span>
+    </button>
+    <button class="tab-btn nav-btn" data-view="field-log">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg>
+      <span>Field Log</span>
     </button>
   </div>
 </nav>
