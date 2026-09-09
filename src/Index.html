@@ -1,60 +1,133 @@
 <?!= include('Stylesheet'); ?>
 
-<header class="app-header">
-  <div class="brand">
-    <div class="brand-mark">AE</div>
-    <div>
-      <h1>Ace Septic &amp; Excavation</h1>
-      <div class="brand-sub">Lead Pipeline</div>
+<!-- Ace Septic & Excavation mark, traced from the Feb 2025 Northbound Studio brand guide -->
+<script id="ace-mark-template" type="text/template">
+  <svg viewBox="0 0 1255 1168" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g transform="translate(-195.055749,1277.995764) scale(0.1,-0.1)" fill="currentColor" stroke="none">
+      <path d="M7320 12766 c-84 -16 -178 -45 -210 -66 -14 -9 -43 -25 -65 -35 -55
+      -28 -182 -156 -306 -309 -139 -172 -270 -333 -519 -636 -116 -141 -268 -327
+      -340 -415 -41 -51 -122 -150 -180 -220 -58 -70 -139 -169 -180 -220 -41 -51
+      -122 -150 -180 -220 -58 -70 -139 -169 -180 -220 -41 -51 -122 -150 -180 -220
+      -58 -70 -139 -169 -180 -220 -41 -51 -122 -150 -180 -220 -58 -70 -139 -169
+      -180 -220 -41 -51 -122 -150 -180 -220 -58 -70 -139 -169 -180 -220 -72 -88
+      -224 -274 -340 -415 -116 -141 -268 -327 -340 -415 -41 -51 -122 -150 -180
+      -220 -58 -70 -139 -169 -180 -220 -41 -51 -122 -150 -180 -220 -58 -70 -139
+      -169 -180 -220 -41 -51 -122 -150 -180 -220 -225 -274 -263 -322 -309 -390
+      -97 -142 -182 -346 -212 -510 -26 -138 -28 -345 -28 -2693 -1 -2063 1 -2483
+      12 -2480 8 2 47 41 87 88 145 166 267 307 366 420 55 63 178 205 274 315 228
+      262 348 400 470 540 55 63 145 167 200 230 55 63 145 167 200 230 55 63 145
+      167 200 230 55 63 145 167 200 230 122 140 242 278 470 540 96 110 217 250
+      270 310 52 61 143 164 200 230 133 153 278 320 400 460 53 61 142 163 198 228
+      56 64 148 170 204 235 240 275 303 347 468 537 228 262 348 400 470 540 55 63
+      145 167 200 230 55 63 144 166 198 228 54 61 144 165 200 230 56 64 147 169
+      202 232 55 63 145 167 200 230 122 140 242 278 470 540 249 286 356 409 468
+      538 54 61 126 144 160 184 140 161 329 210 465 121 14 -10 30 -18 35 -18 24 0
+      120 -119 140 -173 22 -57 22 -66 22 -704 0 -621 4 -726 32 -873 13 -68 45
+      -187 60 -220 6 -14 14 -34 18 -45 37 -95 100 -210 170 -309 19 -28 445 -518
+      945 -1090 883 -1009 2906 -3321 3544 -4048 172 -197 317 -358 322 -358 14 0
+      12 5204 -2 5272 -18 89 -51 185 -83 244 -32 57 -65 99 -546 704 -157 197 -418
+      526 -580 730 -162 204 -432 544 -600 755 -168 211 -438 551 -600 755 -162 204
+      -412 519 -556 698 -428 538 -444 560 -491 714 -31 99 -21 328 17 423 56 139
+      78 170 340 470 261 299 254 289 282 379 63 206 -63 414 -280 464 -76 17 -3977
+      15 -4072 -2z"/>
+    </g>
+  </svg>
+</script>
+
+<div class="app-shell">
+  <!-- Desktop / tablet sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="mark" id="mark-sidebar"></span>
+      <div>
+        <div class="brand-name">Ace Septic &amp; Excavation</div>
+        <div class="brand-sub">Lead Pipeline</div>
+      </div>
     </div>
+    <nav class="side-nav">
+      <button class="tab-btn nav-btn active" data-view="pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="10" rx="1.5"/><rect x="16" y="4" width="5" height="13" rx="1.5"/></svg>
+        <span>Pipeline</span>
+      </button>
+      <button class="tab-btn nav-btn" data-view="new-lead">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+        <span>New Lead</span>
+      </button>
+      <button class="tab-btn nav-btn" data-view="reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        <span>Reports</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">Ace Septic &amp; Excavation CRM</div>
+  </aside>
+
+  <div class="main-area">
+    <!-- Mobile-only top bar -->
+    <div class="mobile-topbar">
+      <span class="mark" id="mark-mobile"></span>
+      <span class="brand-name">Ace Septic &amp; Excavation</span>
+    </div>
+
+    <main>
+      <!-- Pipeline -->
+      <section id="view-pipeline" class="view active">
+        <div class="board" id="board"></div>
+      </section>
+
+      <!-- New Lead -->
+      <section id="view-new-lead" class="view">
+        <div class="card-panel">
+          <h2>New Lead (manual entry)</h2>
+          <form id="new-lead-form">
+            <div class="field"><label>Name *</label><input name="Name" required></div>
+            <div class="field"><label>Email *</label><input type="email" name="Email" required></div>
+            <div class="field"><label>Phone *</label><input name="Phone" required></div>
+            <div class="field"><label>Address</label><input name="Address"></div>
+            <div class="field">
+              <label>Source</label>
+              <select name="Source">
+                <?!= (function(){var o='';SOURCES.forEach(function(s){o+='<option value="'+s+'">'+s+'</option>';});return o;})(); ?>
+              </select>
+            </div>
+            <div class="field"><label>Source Detail</label><input name="Source Detail" placeholder="Ad campaign, referrer name, sign location..."></div>
+            <div class="field">
+              <label>Contact Method</label>
+              <select name="Contact Method">
+                <?!= (function(){var o='';CONTACT_METHODS.forEach(function(s){o+='<option value="'+s+'">'+s+'</option>';});return o;})(); ?>
+              </select>
+            </div>
+            <div class="field"><label>Assigned To</label><input name="Assigned To"></div>
+            <div class="field"><label>Notes</label><textarea name="Notes"></textarea></div>
+            <button type="submit" class="primary">Create Lead</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Reports -->
+      <section id="view-reports" class="view">
+        <div class="reports-scroll" id="reports-container"><div class="empty-state">Loading reports…</div></div>
+      </section>
+    </main>
   </div>
-  <nav class="tabs">
-    <button class="tab-btn active" data-view="pipeline">Pipeline</button>
-    <button class="tab-btn" data-view="new-lead">New Lead</button>
-    <button class="tab-btn" data-view="reports">Reports</button>
-  </nav>
-</header>
+</div>
 
-<main>
-  <!-- Pipeline -->
-  <section id="view-pipeline" class="view active">
-    <div class="board" id="board"></div>
-  </section>
-
-  <!-- New Lead -->
-  <section id="view-new-lead" class="view">
-    <div class="card-panel">
-      <h2 style="margin-top:0;">New Lead (manual entry)</h2>
-      <form id="new-lead-form">
-        <div class="field"><label>Name *</label><input name="Name" required></div>
-        <div class="field"><label>Email *</label><input type="email" name="Email" required></div>
-        <div class="field"><label>Phone *</label><input name="Phone" required></div>
-        <div class="field"><label>Address</label><input name="Address"></div>
-        <div class="field">
-          <label>Source</label>
-          <select name="Source">
-            <?!= (function(){var o='';SOURCES.forEach(function(s){o+='<option value="'+s+'">'+s+'</option>';});return o;})(); ?>
-          </select>
-        </div>
-        <div class="field"><label>Source Detail</label><input name="Source Detail" placeholder="Ad campaign, referrer name, sign location..."></div>
-        <div class="field">
-          <label>Contact Method</label>
-          <select name="Contact Method">
-            <?!= (function(){var o='';CONTACT_METHODS.forEach(function(s){o+='<option value="'+s+'">'+s+'</option>';});return o;})(); ?>
-          </select>
-        </div>
-        <div class="field"><label>Assigned To</label><input name="Assigned To"></div>
-        <div class="field"><label>Notes</label><textarea name="Notes"></textarea></div>
-        <button type="submit" class="primary">Create Lead</button>
-      </form>
-    </div>
-  </section>
-
-  <!-- Reports -->
-  <section id="view-reports" class="view">
-    <div id="reports-container"><div class="empty-state">Loading reports…</div></div>
-  </section>
-</main>
+<!-- Mobile-only bottom nav -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="tab-btn nav-btn active" data-view="pipeline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="10" rx="1.5"/><rect x="16" y="4" width="5" height="13" rx="1.5"/></svg>
+      <span>Pipeline</span>
+    </button>
+    <button class="tab-btn nav-btn" data-view="new-lead">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <span>New Lead</span>
+    </button>
+    <button class="tab-btn nav-btn" data-view="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      <span>Reports</span>
+    </button>
+  </div>
+</nav>
 
 <!-- Lead detail modal -->
 <div class="modal-backdrop" id="detail-backdrop">
@@ -85,5 +158,10 @@
 
 <script>
   var STAGES = <?!= JSON.stringify(STAGES); ?>;
+  (function () {
+    var markHtml = document.getElementById('ace-mark-template').textContent;
+    document.getElementById('mark-sidebar').innerHTML = markHtml;
+    document.getElementById('mark-mobile').innerHTML = markHtml;
+  })();
 </script>
 <?!= include('JavaScript'); ?>

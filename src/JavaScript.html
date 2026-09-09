@@ -4,10 +4,11 @@
 
   var currentDetailLeadId = null;
 
+  // Brand-consistent progression: Stone -> Green (brand) -> Orange (brand) as a lead advances.
   var STAGE_COLORS = {
-    'Leads': '#94a3b8', 'Site Visit': '#60a5fa', 'Estimating': '#38bdf8',
-    'Engineering': '#a78bfa', 'Proposal': '#fbbf24', 'Contract': '#fb923c',
-    'Review': '#34d399', 'Follow Up': '#4ade80', 'Close Out': '#2f6f4f'
+    'Leads': '#BDB5AB', 'Site Visit': '#99978E', 'Estimating': '#767970',
+    'Engineering': '#525B53', 'Proposal': '#2E3D35', 'Contract': '#624028',
+    'Review': '#97431B', 'Follow Up': '#CB460D', 'Close Out': '#FF4900'
   };
 
   function initials(name) {
@@ -107,8 +108,8 @@
     }).join('');
 
     var smsConsentNote = lead['SMS Consent'] === 'Yes'
-      ? '<span style="color:#2f6f4f;">Yes</span>'
-      : '<span style="color:#b3261e;">' + escapeHtml(lead['SMS Consent'] || 'Not Asked') + '</span> ' +
+      ? '<span style="color:#2E3D35;">Yes</span>'
+      : '<span style="color:#a3271b;">' + escapeHtml(lead['SMS Consent'] || 'Not Asked') + '</span> ' +
         '<button class="secondary" id="btn-verbal-consent" style="margin-left:6px;padding:3px 8px;font-size:11px;">Confirm verbal consent</button>';
 
     body.innerHTML =

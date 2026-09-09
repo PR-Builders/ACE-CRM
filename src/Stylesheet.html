@@ -1,91 +1,137 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
   :root {
-    --bg: #f6f7f5;
+    /* Ace Septic & Excavation brand palette (Northbound Studio, Feb 2025) */
+    --black: #050706;
+    --green: #2E3D35;
+    --green-dark: #1a231e;
+    --green-light: #e7e9e6;
+    --orange: #FF4900;
+    --orange-dark: #cc3a00;
+    --stone: #BDB5AB;
+    --light-gray: #EAE6E4;
+    --off-white: #F7F6F5;
+
+    --bg: var(--off-white);
     --surface: #ffffff;
-    --ink: #1c231d;
-    --muted: #767f74;
-    --border: #e4e7e0;
-    --primary: #2f6f4f;
-    --primary-dark: #1e4a34;
-    --primary-light: #e8f2ec;
-    --accent: #b45309;
-    --danger: #b3261e;
+    --ink: var(--black);
+    --muted: #767970;
+    --border: var(--light-gray);
+    --primary: var(--green);
+    --primary-dark: var(--green-dark);
+    --primary-light: var(--green-light);
+    --accent: var(--orange);
+    --accent-dark: var(--orange-dark);
+    --danger: #a3271b;
     --danger-light: #fbeceb;
-    --warn: #92400e;
-    --warn-light: #fdf1e3;
+    --warn: #8a5a2e;
+    --warn-light: #f4ede3;
     --radius: 10px;
     --radius-sm: 7px;
-    --shadow-sm: 0 1px 2px rgba(20, 30, 20, 0.06);
-    --shadow-md: 0 6px 20px rgba(20, 30, 20, 0.10);
-    --shadow-lg: 0 16px 40px rgba(20, 30, 20, 0.16);
+    --shadow-sm: 0 1px 2px rgba(5, 7, 6, 0.06);
+    --shadow-md: 0 6px 20px rgba(5, 7, 6, 0.10);
+    --shadow-lg: 0 16px 40px rgba(5, 7, 6, 0.18);
+    --sidebar-w: 220px;
+    --bottomnav-h: 64px;
   }
 
   * { box-sizing: border-box; }
 
   body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ---------- Header ---------- */
+  .mark svg { display: block; }
 
-  header.app-header {
-    background: linear-gradient(135deg, var(--primary-dark), #163a29);
+  /* ---------- App shell ---------- */
+
+  .app-shell { display: flex; min-height: 100vh; }
+
+  /* Desktop/tablet sidebar */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex: 0 0 var(--sidebar-w);
+    background: linear-gradient(180deg, var(--green), var(--green-dark));
     color: #fff;
-    padding: 16px 24px;
     display: flex;
+    flex-direction: column;
+    padding: 20px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px 22px; }
+  .sidebar .brand .mark { width: 30px; flex-shrink: 0; }
+  .sidebar .brand .mark svg { width: 30px; height: auto; }
+  .sidebar .brand-name { font-size: 14px; font-weight: 700; line-height: 1.2; }
+  .sidebar .brand-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+
+  .side-nav { display: flex; flex-direction: column; gap: 3px; }
+
+  .nav-btn {
+    display: flex; align-items: center; gap: 11px; text-align: left; width: 100%;
+    background: transparent; border: none; color: rgba(255,255,255,0.75);
+    padding: 10px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s;
+  }
+  .nav-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-btn:hover:not(.active) { background: rgba(255,255,255,0.08); color: #fff; }
+  .nav-btn.active { background: #fff; color: var(--green-dark); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+  .sidebar-footer { margin-top: auto; padding: 10px 6px 0; font-size: 10.5px; color: rgba(255,255,255,0.45); }
+
+  /* Mobile top bar (shown only under the breakpoint) */
+  .mobile-topbar {
+    display: none;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    box-shadow: var(--shadow-md);
+    gap: 10px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: #fff;
+    padding: 12px 16px;
     position: sticky;
     top: 0;
     z-index: 20;
+    box-shadow: var(--shadow-md);
   }
+  .mobile-topbar .mark { width: 24px; flex-shrink: 0; }
+  .mobile-topbar .mark svg { width: 24px; height: auto; }
+  .mobile-topbar .brand-name { font-size: 14.5px; font-weight: 700; }
 
-  .brand { display: flex; align-items: center; gap: 12px; }
-
-  .brand-mark {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: rgba(255,255,255,0.14);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 15px; letter-spacing: -0.5px;
-    border: 1px solid rgba(255,255,255,0.18);
+  /* Mobile bottom nav */
+  .bottom-nav {
+    display: none;
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(5,7,6,0.08);
+    z-index: 30;
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
-
-  header.app-header h1 { font-size: 16.5px; margin: 0; font-weight: 600; letter-spacing: 0.1px; }
-  header.app-header .brand-sub { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 1px; }
-
-  nav.tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.15); padding: 4px; border-radius: 10px; }
-
-  nav.tabs button {
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.75);
-    padding: 8px 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: inherit;
-    transition: background 0.15s, color 0.15s;
+  .bottom-nav-inner { display: flex; }
+  .bottom-nav .nav-btn {
+    flex: 1; flex-direction: column; gap: 3px; color: var(--muted); border-radius: 0;
+    padding: 9px 4px 8px; font-size: 10.5px; font-weight: 600;
   }
+  .bottom-nav .nav-btn.active { background: transparent; color: var(--orange); box-shadow: none; }
+  .bottom-nav .nav-btn svg { width: 21px; height: 21px; }
 
-  nav.tabs button:hover:not(.active) { background: rgba(255,255,255,0.08); color: #fff; }
-  nav.tabs button.active { background: #fff; color: var(--primary-dark); font-weight: 600; box-shadow: var(--shadow-sm); }
+  .main-area { flex: 1; min-width: 0; }
 
   main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 
   .view { display: none; }
   .view.active { display: block; }
+
+  @media (max-width: 880px) {
+    .sidebar { display: none; }
+    .mobile-topbar { display: flex; }
+    .bottom-nav { display: block; }
+    .main-area { padding-bottom: var(--bottomnav-h); }
+    main { padding: 14px; }
+  }
 
   /* ---------- Board ---------- */
 
@@ -94,6 +140,7 @@
     gap: 14px;
     overflow-x: auto;
     padding-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .column {
@@ -106,6 +153,10 @@
     flex-direction: column;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
+  }
+
+  @media (max-width: 880px) {
+    .column { min-width: 82vw; flex: 0 0 82vw; }
   }
 
   .column-accent { height: 4px; width: 100%; }
@@ -189,11 +240,11 @@
   /* ---------- Buttons ---------- */
 
   button.primary {
-    background: var(--primary); color: #fff; border: none; padding: 10px 18px;
+    background: var(--accent); color: #fff; border: none; padding: 10px 18px;
     border-radius: var(--radius-sm); cursor: pointer; font-size: 13.5px; font-weight: 600;
     font-family: inherit; transition: background 0.15s;
   }
-  button.primary:hover { background: var(--primary-dark); }
+  button.primary:hover { background: var(--accent-dark); }
 
   button.secondary {
     background: #fff; color: var(--ink); border: 1px solid var(--border); padding: 9px 15px;
@@ -217,7 +268,7 @@
   form input, form select, form textarea {
     padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
     font-size: 13.5px; font-family: inherit; color: var(--ink); background: #fff;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
   }
   form input:focus, form select:focus, form textarea:focus {
     outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
@@ -233,7 +284,7 @@
   /* ---------- Modals ---------- */
 
   .modal-backdrop {
-    display: none; position: fixed; inset: 0; background: rgba(20,25,20,0.5); backdrop-filter: blur(1px);
+    display: none; position: fixed; inset: 0; background: rgba(5,7,6,0.5); backdrop-filter: blur(1px);
     align-items: flex-start; justify-content: center; padding: 48px 16px; overflow-y: auto; z-index: 50;
   }
   .modal-backdrop.active { display: flex; }
@@ -282,6 +333,8 @@
   table.report-table tr:last-child td { border-bottom: none; }
   table.report-table tbody tr:hover { background: var(--bg); }
 
+  .reports-scroll { overflow-x: auto; }
+
   .section-title { font-size: 14px; font-weight: 700; margin: 24px 0 10px; color: var(--ink); }
   .section-title:first-child { margin-top: 0; }
 
@@ -290,11 +343,9 @@
     border-radius: var(--radius-sm); font-size: 13px; opacity: 0; transform: translateY(8px); transition: all 0.2s;
     z-index: 100; box-shadow: var(--shadow-lg);
   }
+  @media (max-width: 880px) {
+    .toast { bottom: calc(var(--bottomnav-h) + 14px); left: 16px; right: 16px; }
+  }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.error { background: var(--danger); }
-
-  @media (max-width: 640px) {
-    header.app-header { flex-direction: column; align-items: flex-start; }
-    main { padding: 14px; }
-  }
 </style>
