@@ -58,12 +58,16 @@
     STAGES.forEach(function (stage) {
       var cards = board[stage] || [];
       var col = document.createElement('div');
-      col.className = 'column';
+      col.className = 'column' + (cards.length ? '' : ' collapsed');
       col.innerHTML =
         '<div class="column-accent" style="background:' + (STAGE_COLORS[stage] || '#94a3b8') + '"></div>' +
         '<div class="column-header"><span class="stage-name">' + escapeHtml(stage) + '</span>' +
-        '<span class="count-pill">' + cards.length + '</span></div>' +
+        '<span class="count-pill">' + cards.length + '</span>' +
+        '<svg class="chev mobile-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>' +
         '<div class="column-body"></div>';
+      col.querySelector('.column-header').addEventListener('click', function () {
+        col.classList.toggle('collapsed');
+      });
       var body = col.querySelector('.column-body');
       if (!cards.length) {
         body.innerHTML = '<div class="empty-state"><span class="empty-icon">&#9679;</span>No leads in this stage</div>';

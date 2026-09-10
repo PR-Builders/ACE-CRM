@@ -155,8 +155,14 @@
     overflow: hidden;
   }
 
+  .mobile-only { display: none; }
+
   @media (max-width: 880px) {
-    .column { min-width: 82vw; flex: 0 0 82vw; }
+    .board { flex-direction: column; overflow-x: visible; gap: 10px; }
+    .column { min-width: 100%; flex: 1 1 auto; }
+    .mobile-only { display: block; width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; transition: transform 0.15s; }
+    .column.collapsed .mobile-only { transform: rotate(-90deg); }
+    .column.collapsed .column-body { display: none; }
   }
 
   .column-accent { height: 4px; width: 100%; }
@@ -167,6 +173,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
+  }
+  .column-header .stage-name { flex: 1; }
+
+  @media (max-width: 880px) {
+    .column-header { cursor: pointer; }
   }
 
   .column-header .stage-name {
@@ -196,6 +208,10 @@
     min-height: 90px;
     max-height: calc(100vh - 230px);
     overflow-y: auto;
+  }
+
+  @media (max-width: 880px) {
+    .column-body { max-height: none; overflow-y: visible; }
   }
 
   .card {
