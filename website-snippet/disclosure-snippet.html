@@ -6,6 +6,12 @@
   disclosure's version (see SMS_DISCLOSURE_VERSION in Script Properties)
   the moment the form is submitted. Update the version string any time the
   wording below changes.
+
+  Requires utm-capture.js loaded on the page too — it stamps the hidden
+  utm_*/gclid/fbclid fields below and turns Submit into an AJAX post so the
+  visitor isn't sent to a bare JSON page. Load it once, e.g. in your site's
+  footer template, before this form:
+    <script src="/path/to/utm-capture.js"></script>
 -->
 <form data-ace-lead-form action="https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec" method="POST">
   <input type="hidden" name="disclosure_version" value="v1">
@@ -17,6 +23,7 @@
   <label>How can we help? <textarea name="notes"></textarea></label>
 
   <button type="submit">Submit</button>
+  <div data-ace-form-status style="font-size:13px;font-weight:600;min-height:1.2em;margin-top:8px;"></div>
 
   <p class="sms-disclosure" style="font-size:12px;color:#555;max-width:480px;">
     By clicking Submit, you agree that Ace Septic &amp; Excavation may call
