@@ -108,11 +108,19 @@
   // ---------- Lead detail ----------
 
   function openDetail(leadId) {
+    if (!leadId) {
+      showToast('That card is missing its Lead ID — try refreshing the pipeline.', true);
+      return;
+    }
     currentDetailLeadId = leadId;
     google.script.run.withSuccessHandler(renderDetail).withFailureHandler(onError).getLead(leadId);
   }
 
   function renderDetail(data) {
+    if (!data || !data.lead) {
+      showToast('Could not load that lead — please try again.', true);
+      return;
+    }
     var lead = data.lead;
     document.getElementById('detail-name').textContent = lead.Name || '(no name — placeholder call lead)';
     var body = document.getElementById('detail-body');
