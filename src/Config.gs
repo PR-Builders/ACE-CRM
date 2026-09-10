@@ -12,6 +12,14 @@ function getConfig_() {
     reviewLink: p.REVIEW_LINK || '',
     smsDisclosureVersion: p.SMS_DISCLOSURE_VERSION || 'v1',
 
+    // Optional: send stage-automation and digest emails as this address instead
+    // of whichever Google account is running the script. Must already be a
+    // verified "Send mail as" alias on that account (Gmail Settings > Accounts
+    // > Send mail as) — see docs/SETUP.md. Leave blank to send as the account
+    // that authorized/deployed the script.
+    fromEmail: p.FROM_EMAIL || '',
+    fromName: p.FROM_NAME || p.COMPANY_NAME || 'Ace Septic & Excavation',
+
     staffDigestEmails: (p.STAFF_DIGEST_EMAILS || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean),
 
     twilioAccountSid: p.TWILIO_ACCOUNT_SID || '',

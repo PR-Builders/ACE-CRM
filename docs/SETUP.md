@@ -51,6 +51,8 @@ the Sheet directly; no code changes needed for wording tweaks.
 | `COMPANY_PHONE` | disclosure text | `(970) 555-0000` |
 | `PRIVACY_POLICY_URL` | disclosure text | `https://acesepticco.com/privacy` |
 | `REVIEW_LINK` | Review/Follow Up stage templates | your Google review short link |
+| `FROM_EMAIL` | sending as a custom address | `leads@acesepticco.com` (optional — see below) |
+| `FROM_NAME` | sender display name | `Ace Septic & Excavation` (optional, defaults to `COMPANY_NAME`) |
 | `SMS_DISCLOSURE_VERSION` | consent audit trail | `v1` |
 | `STAFF_DIGEST_EMAILS` | daily follow-up digest | `staff@acesepticco.com,owner@acesepticco.com` |
 | `TWILIO_ACCOUNT_SID` | SMS sending | from Twilio console |
@@ -77,6 +79,37 @@ Everything works with these left unset except the features that need
 them — e.g. skip the Twilio/Meta rows entirely if you're not ready to turn
 on texting or ad reporting yet; `runStageAutomation_`/`sendMetaEvent_`
 no-op (and log why) when their config is missing.
+
+### Sending emails from a custom address
+
+By default, stage-automation and digest emails are sent as whichever Google
+account authorized/deployed the script (e.g. whoever ran `clasp login` and
+owns the deployment) — so if that's your `@pr.builders` account, emails go
+out from that address. To send as something like `leads@acesepticco.com`
+instead:
+
+1. In **that same Google account's** Gmail (not Ace's — the account the
+   script runs as): **Settings → Accounts → Send mail as → Add another
+   email address**, enter `leads@acesepticco.com`, and complete Google's
+   verification (it emails a confirmation link to that address).
+2. Set the `FROM_EMAIL` Script Property to that address, and optionally
+   `FROM_NAME` (e.g. `Ace Septic & Excavation`) for the display name.
+3. Re-run `clasp push` if you haven't already picked up this change, and
+   re-authorize the script when prompted — sending as an alias needs the
+   `gmail.send` scope instead of the more restricted mail-only scope.
+
+If that verification step isn't done first, `GmailApp.sendEmail` will
+silently fall back to sending as the authorizing account instead of
+`FROM_EMAIL`. The most reliable long-term fix is deploying this whole
+project from an actual `@acesepticco.com` Google account (Workspace or
+plain Gmail) instead of an alias on a `pr.builders` one — then it's just
+naturally the sending address, no alias dance required. If Ace doesn't
+have their own Google account for this yet and you want it to look fully
+independent from PR Builders (matching SPF/DKIM and everything), the more
+robust route is a transactional email service (SendGrid, Postmark,
+Mailgun) called via `UrlFetchApp` instead of `GmailApp` — a larger change
+than what's built here, and only worth it if alias-based sending causes
+deliverability problems (e.g. landing in spam) in practice.
 
 ## 5. Install the time-driven triggers
 
