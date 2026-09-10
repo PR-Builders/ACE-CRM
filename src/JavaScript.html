@@ -17,6 +17,15 @@
     return ((parts[0][0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
   }
 
+  /** Wires an event listener only if the element actually exists, so one
+   *  missing/renamed element (e.g. a partial deploy) can't throw and halt
+   *  the rest of this script — including the initial loadPipeline() call
+   *  at the bottom, which would otherwise leave the whole board blank. */
+  function on(id, event, handler) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener(event, handler);
+  }
+
   document.querySelectorAll('.tab-btn').forEach(function (btn) {
     btn.addEventListener('click', function () { switchView(btn.dataset.view); });
   });
@@ -138,11 +147,10 @@
     body.querySelectorAll('.stage-row button').forEach(function (btn) {
       btn.addEventListener('click', function () { moveStage(leadId, btn.dataset.stage); });
     });
-    var verbalBtn = document.getElementById('btn-verbal-consent');
-    if (verbalBtn) verbalBtn.addEventListener('click', function () { confirmVerbalConsent(leadId); });
-    document.getElementById('btn-save-fields').addEventListener('click', function () { saveFields(leadId); });
-    document.getElementById('btn-not-qualified').addEventListener('click', openNotQualifiedModal);
-    document.getElementById('btn-spam').addEventListener('click', function () { markSpam(leadId); });
+    on('btn-verbal-consent', 'click', function () { confirmVerbalConsent(leadId); });
+    on('btn-save-fields', 'click', function () { saveFields(leadId); });
+    on('btn-not-qualified', 'click', openNotQualifiedModal);
+    on('btn-spam', 'click', function () { markSpam(leadId); });
 
     document.getElementById('detail-backdrop').classList.add('active');
   }
@@ -197,10 +205,10 @@
   function openNotQualifiedModal() {
     document.getElementById('nq-backdrop').classList.add('active');
   }
-  document.getElementById('nq-close').addEventListener('click', function () {
+  on('nq-close', 'click', function () {
     document.getElementById('nq-backdrop').classList.remove('active');
   });
-  document.getElementById('nq-confirm').addEventListener('click', function () {
+  on('nq-confirm', 'click', function () {
     var reason = document.getElementById('nq-reason').value;
     google.script.run.withSuccessHandler(function () {
       showToast('Marked Not Qualified');
@@ -210,12 +218,12 @@
     }).withFailureHandler(onError).flagNotQualified(currentDetailLeadId, reason, '');
   });
 
-  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  on('detail-close', 'click', closeDetail);
   function closeDetail() { document.getElementById('detail-backdrop').classList.remove('active'); }
 
   // ---------- New Lead ----------
 
-  document.getElementById('new-lead-form').addEventListener('submit', function (e) {
+  on('new-lead-form', 'submit', function (e) {
     e.preventDefault();
     var form = e.target;
     var data = {};
@@ -349,16 +357,16 @@
     document.getElementById('fl-form-view').hidden = false;
   }
 
-  document.getElementById('fl-new-entry-btn').addEventListener('click', function () {
+  on('fl-new-entry-btn', 'click', function () {
     resetFieldLogForm();
     document.getElementById('fl-ticketId').value = newTicketId();
     document.getElementById('fl-form-title').textContent = 'New Job Entry';
     showFieldLogForm();
   });
 
-  document.getElementById('fl-back-btn').addEventListener('click', loadFieldLog);
+  on('fl-back-btn', 'click', loadFieldLog);
 
-  document.getElementById('field-log-form').addEventListener('submit', function (e) {
+  on('field-log-form', 'submit', function (e) {
     e.preventDefault();
     var entry = { ticketId: document.getElementById('fl-ticketId').value };
     FL_FIELDS.forEach(function (key) {
