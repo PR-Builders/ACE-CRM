@@ -560,41 +560,6 @@
     showToast(err.message || String(err), true);
   }
 
-  // ---------- Diagnostics (temporary) ----------
-  // Runs each RPC call one at a time, from inside the app's own script (so
-  // there's no DevTools frame-selection confusion), and shows every result
-  // in one alert so it can be read straight off the screen or screenshotted.
-
-  function runOneDiagnostic(label, fnName, arg) {
-    return new Promise(function (resolve) {
-      var chain = google.script.run
-        .withSuccessHandler(function (r) { resolve(label + ': ' + (r === null ? 'NULL' : r === undefined ? 'UNDEFINED' : JSON.stringify(r))); })
-        .withFailureHandler(function (e) { resolve(label + ': THREW - ' + (e && e.message ? e.message : String(e))); });
-      if (arg === undefined) chain[fnName]();
-      else chain[fnName](arg);
-    });
-  }
-
-  on('run-diagnostics-btn', 'click', function () {
-    var steps = [
-      ['debugEcho', 'debugEcho', 'hello'],
-      ['debugSheetPing', 'debugSheetPing'],
-      ['debugReturnArray', 'debugReturnArray'],
-      ['debugReturnDate', 'debugReturnDate'],
-      ['debugReturnOneLeadNoDates', 'debugReturnOneLeadNoDates'],
-      ['getLeadsList', 'getLeadsList']
-    ];
-    var results = [];
-    var runNext = function (i) {
-      if (i >= steps.length) { alert(results.join('\n\n')); return; }
-      runOneDiagnostic(steps[i][0], steps[i][1], steps[i][2]).then(function (r) {
-        results.push(r);
-        runNext(i + 1);
-      });
-    };
-    runNext(0);
-  });
-
   loadDashboard();
 })();
 </script>
