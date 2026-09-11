@@ -89,6 +89,11 @@ function getLead(leadId) {
   return { lead: found.obj, activities: getActivitiesForLead(leadId) };
 }
 
+/** All leads, any status — feeds the flat, searchable Leads table view. */
+function getLeadsList() {
+  return getAllLeads_();
+}
+
 function getAllLeads_() {
   var sheet = getSheet_(LEADS_SHEET);
   var headers = getHeaders_(sheet);

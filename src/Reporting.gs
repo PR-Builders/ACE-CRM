@@ -1,5 +1,47 @@
 /** Source/campaign/lost-reason reporting, consumed by the Reports view. */
 
+/** At-a-glance KPIs + an actionable "needs attention" list, for the Dashboard view. */
+function getDashboardStats() {
+  var leads = getAllLeads_();
+  var today = startOfDay_(new Date());
+  var weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  var active = leads.filter(function (l) { return l.Status === 'Active'; });
+  var closedThisMonth = leads.filter(function (l) {
+    return l.Stage === 'Close Out' && l['Last Updated'] && new Date(l['Last Updated']) >= monthStart;
+  });
+  var followUpsDue = active.filter(function (l) {
+    return l['Next Follow-Up Date'] && startOfDay_(l['Next Follow-Up Date']) <= today;
+  });
+  var newThisWeek = leads.filter(function (l) {
+    return l['Created Date'] && new Date(l['Created Date']) >= weekAgo;
+  });
+  var closedTotal = leads.filter(function (l) { return l.Stage === 'Close Out'; }).length;
+
+  var needsAttention = active
+    .filter(function (l) { return l['Next Follow-Up Date'] && startOfDay_(l['Next Follow-Up Date']) <= today; })
+    .sort(function (a, b) { return new Date(a['Next Follow-Up Date']) - new Date(b['Next Follow-Up Date']); })
+    .slice(0, 8)
+    .map(function (l) {
+      return {
+        'Lead ID': l['Lead ID'], Name: l.Name, Phone: l.Phone, Stage: l.Stage,
+        'Next Follow-Up Date': l['Next Follow-Up Date']
+      };
+    });
+
+  return {
+    activeCount: active.length,
+    pipelineValue: sumValues_(active, 'Estimated Value'),
+    closedThisMonthCount: closedThisMonth.length,
+    closedThisMonthValue: sumValues_(closedThisMonth, 'Actual Value'),
+    followUpsDueCount: followUpsDue.length,
+    newThisWeekCount: newThisWeek.length,
+    conversionRate: leads.length ? Math.round((closedTotal / leads.length) * 1000) / 10 : 0,
+    needsAttention: needsAttention
+  };
+}
+
 function getSourceReport() {
   var leads = getAllLeads_();
 

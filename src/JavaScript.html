@@ -33,9 +33,32 @@
   function switchView(view) {
     document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.view === view); });
     document.querySelectorAll('.view').forEach(function (v) { v.classList.toggle('active', v.id === 'view-' + view); });
+    if (view === 'dashboard') loadDashboard();
+    if (view === 'leads') loadLeadsList();
     if (view === 'pipeline') loadPipeline();
     if (view === 'reports') loadReports();
     if (view === 'field-log') loadFieldLog();
+  }
+
+  /** Refreshes whichever list view is currently on screen after a lead
+   *  mutation, since the detail modal can now be opened from Dashboard's
+   *  attention list or the Leads table, not just the Pipeline board. */
+  function refreshCurrentView() {
+    var active = document.querySelector('.tab-btn.active');
+    var view = active ? active.dataset.view : 'pipeline';
+    if (view === 'dashboard') loadDashboard();
+    else if (view === 'leads') loadLeadsList();
+    else if (view === 'pipeline') loadPipeline();
+  }
+
+  /** Compares a stored date value against today (date-only, ignoring time). */
+  function isPastDue(dateValue) {
+    if (!dateValue) return false;
+    var d = new Date(dateValue);
+    d.setHours(0, 0, 0, 0);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d <= today;
   }
 
   function showToast(message, isError) {
@@ -66,13 +89,16 @@
     el.innerHTML = '';
     STAGES.forEach(function (stage) {
       var cards = board[stage] || [];
+      var stageValue = cards.reduce(function (sum, c) { return sum + (Number(c['Estimated Value']) || 0); }, 0);
       var col = document.createElement('div');
       col.className = 'column' + (cards.length ? '' : ' collapsed');
       col.innerHTML =
         '<div class="column-accent" style="background:' + (STAGE_COLORS[stage] || '#94a3b8') + '"></div>' +
-        '<div class="column-header"><span class="stage-name">' + escapeHtml(stage) + '</span>' +
+        '<div class="column-header"><div class="column-header-top"><span class="stage-name">' + escapeHtml(stage) + '</span>' +
         '<span class="count-pill">' + cards.length + '</span>' +
         '<svg class="chev mobile-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>' +
+        (stageValue ? '<div class="column-value">' + fmtMoney(stageValue) + ' total</div>' : '') +
+        '</div>' +
         '<div class="column-body"></div>';
       col.querySelector('.column-header').addEventListener('click', function () {
         col.classList.toggle('collapsed');
@@ -82,8 +108,9 @@
         body.innerHTML = '<div class="empty-state"><span class="empty-icon">&#9679;</span>No leads in this stage</div>';
       }
       cards.forEach(function (card) {
+        var overdue = isPastDue(card['Next Follow-Up Date']);
         var div = document.createElement('div');
-        div.className = 'card';
+        div.className = 'card' + (overdue ? ' overdue' : '');
         div.innerHTML =
           '<div class="card-top">' +
             '<div class="avatar">' + escapeHtml(initials(card.Name)) + '</div>' +
@@ -91,7 +118,9 @@
             '<div class="phone">' + escapeHtml(card.Phone || '') + '</div></div>' +
           '</div>' +
           '<div class="meta"><span class="badge">' + escapeHtml(card.Source || '') + '</span>' +
-          '<span class="days-tag' + (card.daysInStage > 7 ? ' days-warn' : '') + '">' + card.daysInStage + 'd in stage</span></div>';
+          (card['Estimated Value'] ? '<span class="value">' + fmtMoney(card['Estimated Value']) + '</span>' : '') +
+          '<span class="days-tag' + (card.daysInStage > 7 ? ' days-warn' : '') + '">' + card.daysInStage + 'd in stage</span></div>' +
+          (overdue ? '<div class="followup-overdue">&#9888; Follow-up overdue</div>' : '');
         div.addEventListener('click', function () { openDetail(card['Lead ID']); });
         body.appendChild(div);
       });
@@ -104,6 +133,97 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+
+  // ---------- Dashboard ----------
+
+  function loadDashboard() {
+    google.script.run.withSuccessHandler(renderDashboard).withFailureHandler(onError).getDashboardStats();
+  }
+
+  function renderDashboard(stats) {
+    var kpis = [
+      { label: 'Active Leads', value: stats.activeCount },
+      { label: 'Pipeline Value', value: fmtMoney(stats.pipelineValue), accent: true },
+      { label: 'Closed This Month', value: stats.closedThisMonthCount + ' (' + fmtMoney(stats.closedThisMonthValue) + ')' },
+      { label: 'New Leads (7d)', value: stats.newThisWeekCount },
+      { label: 'Follow-Ups Due', value: stats.followUpsDueCount, warn: stats.followUpsDueCount > 0 },
+      { label: 'Conversion Rate', value: stats.conversionRate + '%' }
+    ];
+    document.getElementById('kpi-grid').innerHTML = kpis.map(function (k) {
+      return '<div class="kpi-tile' + (k.accent ? ' accent' : '') + (k.warn ? ' warn' : '') + '">' +
+        '<div class="kpi-value">' + k.value + '</div><div class="kpi-label">' + escapeHtml(k.label) + '</div></div>';
+    }).join('');
+
+    var listEl = document.getElementById('needs-attention-list');
+    if (!stats.needsAttention.length) {
+      listEl.innerHTML = '<div class="empty-state">Nothing overdue — you\'re all caught up.</div>';
+      return;
+    }
+    listEl.innerHTML = stats.needsAttention.map(function (lead) {
+      return '<div class="attention-item" data-id="' + escapeHtml(lead['Lead ID']) + '">' +
+        '<div><div class="name">' + escapeHtml(lead.Name || '(no name)') + '</div>' +
+        '<div class="sub">' + escapeHtml(lead.Stage) + ' &middot; ' + escapeHtml(lead.Phone || '') + '</div></div>' +
+        '<div class="due">Due ' + fmtDate(lead['Next Follow-Up Date']) + '</div></div>';
+    }).join('');
+    listEl.querySelectorAll('.attention-item').forEach(function (item) {
+      item.addEventListener('click', function () { openDetail(item.dataset.id); });
+    });
+  }
+
+  // ---------- Leads (flat table) ----------
+
+  var leadsListCache = [];
+
+  function loadLeadsList() {
+    google.script.run.withSuccessHandler(function (leads) {
+      leadsListCache = leads;
+      renderLeadsList();
+    }).withFailureHandler(onError).getLeadsList();
+  }
+
+  function renderLeadsList() {
+    var query = (document.getElementById('leads-search').value || '').toLowerCase().trim();
+    var statusFilter = document.getElementById('leads-status-filter').value;
+
+    var filtered = leadsListCache.filter(function (lead) {
+      if (statusFilter && lead.Status !== statusFilter) return false;
+      if (!query) return true;
+      var haystack = [lead.Name, lead.Phone, lead.Email, lead.Address, lead.Source].join(' ').toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    });
+
+    var container = document.getElementById('leads-table-container');
+    if (!filtered.length) {
+      container.innerHTML = '<div class="empty-state">No leads match.</div>';
+      return;
+    }
+
+    var rows = filtered.map(function (lead) {
+      var overdue = isPastDue(lead['Next Follow-Up Date']) && lead.Status === 'Active';
+      return '<tr data-id="' + escapeHtml(lead['Lead ID']) + '">' +
+        '<td class="leads-primary">' + escapeHtml(lead.Name || '(no name)') + '</td>' +
+        '<td data-label="Phone">' + escapeHtml(lead.Phone || '') + '</td>' +
+        '<td data-label="Source">' + escapeHtml(lead.Source || '') + '</td>' +
+        '<td data-label="Stage">' + escapeHtml(lead.Stage || '') + '</td>' +
+        '<td data-label="Status">' + escapeHtml(lead.Status || '') + '</td>' +
+        '<td data-label="Est. Value">' + fmtMoney(lead['Estimated Value']) + '</td>' +
+        '<td data-label="Assigned To">' + escapeHtml(lead['Assigned To'] || '') + '</td>' +
+        '<td data-label="Next Follow-Up">' + (overdue ? '<span class="followup-overdue">&#9888; ' : '') +
+          fmtDate(lead['Next Follow-Up Date']) + (overdue ? '</span>' : '') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    container.innerHTML = '<table class="leads-table"><thead><tr>' +
+      '<th>Name</th><th>Phone</th><th>Source</th><th>Stage</th><th>Status</th><th>Est. Value</th><th>Assigned To</th><th>Next Follow-Up</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+    container.querySelectorAll('tbody tr').forEach(function (row) {
+      row.addEventListener('click', function () { openDetail(row.dataset.id); });
+    });
+  }
+
+  on('leads-search', 'input', renderLeadsList);
+  on('leads-status-filter', 'change', renderLeadsList);
 
   // ---------- Lead detail ----------
 
@@ -175,7 +295,7 @@
     google.script.run.withSuccessHandler(function () {
       showToast('Moved to ' + stage);
       openDetail(leadId);
-      loadPipeline();
+      refreshCurrentView();
     }).withFailureHandler(onError).updateLeadStage(leadId, stage, '');
   }
 
@@ -197,7 +317,7 @@
     google.script.run.withSuccessHandler(function () {
       showToast('Saved');
       openDetail(leadId);
-      loadPipeline();
+      refreshCurrentView();
     }).withFailureHandler(onError).updateLeadFields(leadId, fields, '');
   }
 
@@ -206,7 +326,7 @@
     google.script.run.withSuccessHandler(function () {
       showToast('Marked as Spam');
       closeDetail();
-      loadPipeline();
+      refreshCurrentView();
     }).withFailureHandler(onError).flagSpam(leadId, '');
   }
 
@@ -222,7 +342,7 @@
       showToast('Marked Not Qualified');
       document.getElementById('nq-backdrop').classList.remove('active');
       closeDetail();
-      loadPipeline();
+      refreshCurrentView();
     }).withFailureHandler(onError).flagNotQualified(currentDetailLeadId, reason, '');
   });
 
@@ -392,6 +512,6 @@
     showToast(err.message || String(err), true);
   }
 
-  loadPipeline();
+  loadDashboard();
 })();
 </script>

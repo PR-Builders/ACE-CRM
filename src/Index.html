@@ -45,7 +45,15 @@
       </div>
     </div>
     <nav class="side-nav">
-      <button class="tab-btn nav-btn active" data-view="pipeline">
+      <button class="tab-btn nav-btn active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="tab-btn nav-btn" data-view="leads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span>Leads</span>
+      </button>
+      <button class="tab-btn nav-btn" data-view="pipeline">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="10" rx="1.5"/><rect x="16" y="4" width="5" height="13" rx="1.5"/></svg>
         <span>Pipeline</span>
       </button>
@@ -71,11 +79,36 @@
       <span class="mark" id="mark-mobile"></span>
       <span class="brand-name">Ace Septic &amp; Excavation</span>
       <span class="version-badge">v<?!= APP_VERSION ?></span>
+      <button class="tab-btn quick-add-btn" data-view="new-lead" title="New Lead" aria-label="New Lead">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </div>
 
     <main>
+      <!-- Dashboard -->
+      <section id="view-dashboard" class="view active">
+        <div class="kpi-grid" id="kpi-grid"><div class="empty-state">Loading…</div></div>
+        <div class="section-title">Needs Attention</div>
+        <div id="needs-attention-list"><div class="empty-state">Loading…</div></div>
+      </section>
+
+      <!-- Leads (flat, searchable table) -->
+      <section id="view-leads" class="view">
+        <div class="leads-toolbar">
+          <input type="search" id="leads-search" placeholder="Search by name, phone, email, address...">
+          <select id="leads-status-filter">
+            <option value="Active">Active</option>
+            <option value="">All statuses</option>
+            <option value="Spam">Spam</option>
+            <option value="Not Qualified">Not Qualified</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+        <div id="leads-table-container"><div class="empty-state">Loading…</div></div>
+      </section>
+
       <!-- Pipeline -->
-      <section id="view-pipeline" class="view active">
+      <section id="view-pipeline" class="view">
         <div class="board" id="board"></div>
       </section>
 
@@ -217,16 +250,20 @@
   </div>
 </div>
 
-<!-- Mobile-only bottom nav -->
+<!-- Mobile-only bottom nav (New Lead moves to the top-bar + button on mobile, to keep 5 destinations instead of 6 cramped icons) -->
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
-    <button class="tab-btn nav-btn active" data-view="pipeline">
+    <button class="tab-btn nav-btn active" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="tab-btn nav-btn" data-view="leads">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <span>Leads</span>
+    </button>
+    <button class="tab-btn nav-btn" data-view="pipeline">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="10" rx="1.5"/><rect x="16" y="4" width="5" height="13" rx="1.5"/></svg>
       <span>Pipeline</span>
-    </button>
-    <button class="tab-btn nav-btn" data-view="new-lead">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-      <span>New Lead</span>
     </button>
     <button class="tab-btn nav-btn" data-view="reports">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
