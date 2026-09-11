@@ -15,7 +15,7 @@ var STAGE_TEMPLATES_SHEET = 'Stage Templates';
  * (see docs/SETUP.md - "Confirming a deploy went live"). Bump this any time
  * you push a change meant to go live.
  */
-var APP_VERSION = '2026-09-11.15';
+var APP_VERSION = '2026-09-11.16';
 
 var LEAD_HEADERS = [
   'Lead ID', 'Name', 'Email', 'Phone', 'Address', 'Source', 'Source Detail',
