@@ -521,6 +521,41 @@
     showToast(err.message || String(err), true);
   }
 
+  // ---------- Diagnostics (temporary) ----------
+  // Runs each RPC call one at a time, from inside the app's own script (so
+  // there's no DevTools frame-selection confusion), and shows every result
+  // in one alert so it can be read straight off the screen or screenshotted.
+
+  function runOneDiagnostic(label, fnName, arg) {
+    return new Promise(function (resolve) {
+      var chain = google.script.run
+        .withSuccessHandler(function (r) { resolve(label + ': ' + (r === null ? 'NULL' : r === undefined ? 'UNDEFINED' : JSON.stringify(r))); })
+        .withFailureHandler(function (e) { resolve(label + ': THREW - ' + (e && e.message ? e.message : String(e))); });
+      if (arg === undefined) chain[fnName]();
+      else chain[fnName](arg);
+    });
+  }
+
+  on('run-diagnostics-btn', 'click', function () {
+    var results = [];
+    runOneDiagnostic('debugEcho', 'debugEcho', 'hello')
+      .then(function (r) { results.push(r); return runOneDiagnostic('debugSheetPing', 'debugSheetPing'); })
+      .then(function (r) { results.push(r); return runOneDiagnostic('getLeadsList', 'getLeadsList'); })
+      .then(function (r) {
+        results.push(r);
+        var firstId = null;
+        try {
+          var parsed = JSON.parse(r.replace(/^getLeadsList: /, ''));
+          if (Array.isArray(parsed) && parsed.length) firstId = parsed[0]['Lead ID'];
+        } catch (e) { /* leave firstId null */ }
+        if (!firstId) { results.push('getLead: SKIPPED (no lead id available from getLeadsList result)'); alert(results.join('\n\n')); return; }
+        runOneDiagnostic('getLead', 'getLead', firstId).then(function (r2) {
+          results.push(r2);
+          alert(results.join('\n\n'));
+        });
+      });
+  });
+
   loadDashboard();
 })();
 </script>
