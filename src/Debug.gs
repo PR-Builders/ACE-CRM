@@ -1,11 +1,15 @@
 /**
  * Temporary diagnostics — safe to delete once the "click a lead card" bug
- * is resolved. Run debugGetLead_ directly from the Apps Script editor
+ * is resolved. Run debugGetLead directly from the Apps Script editor
  * (select it in the function dropdown, click Run), then View > Logs (or
  * the Executions panel) to see exactly what getLead() does server-side,
  * bypassing the browser entirely.
+ *
+ * Named without a trailing underscore on purpose — Apps Script hides
+ * underscore-suffixed functions from the editor's Run dropdown, treating
+ * them as private. This one needs to be runnable from the UI.
  */
-function debugGetLead_() {
+function debugGetLead() {
   var sheet = getSheet_(LEADS_SHEET);
   var headers = getHeaders_(sheet);
   Logger.log('Leads sheet headers: ' + JSON.stringify(headers));
