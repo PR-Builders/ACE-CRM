@@ -32,8 +32,16 @@ function runStageAutomation_(lead, stage) {
   if (template['Send Email'] === true && !isBlank_(lead.Email)) {
     var subject = fillTemplate_(template['Email Subject'], context);
     var body = fillTemplate_(template['Email Body'], context);
-    sendEmail_(lead.Email, subject, body);
-    logActivity_(lead['Lead ID'], 'Email Sent', subject, '');
+    try {
+      sendEmail_(lead.Email, subject, body);
+      logActivity_(lead['Lead ID'], 'Email Sent', subject, '');
+    } catch (err) {
+      // The stage change itself is already saved by this point (writeLeadRow_
+      // runs before this function is called) -- a mail-send failure (quota,
+      // auth, invalid recipient) must never take down the whole RPC response,
+      // or the UI looks like the move silently failed when it actually saved.
+      logActivity_(lead['Lead ID'], 'Email Sent', 'Failed to send: ' + err.message, '');
+    }
   }
 
   if (template['Send Text'] === true) {

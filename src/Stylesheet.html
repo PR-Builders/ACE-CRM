@@ -174,35 +174,36 @@
 
   .column-accent { height: 4px; width: 100%; }
 
+  .pipeline-header {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .pipeline-header h2 { margin: 0; font-size: 22px; font-weight: 700; color: var(--ink); }
+  .pipeline-header p { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); }
+  .pipeline-header input[type="search"] {
+    padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; font-family: inherit; min-width: 260px;
+  }
+  @media (max-width: 640px) {
+    .pipeline-header input[type="search"] { width: 100%; min-width: 0; }
+  }
+
   .column-header {
     padding: 13px 14px 11px;
     border-bottom: 1px solid var(--border);
   }
   .column-header-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .column-header .stage-name { flex: 1; }
-  .column-value { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .column-value { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
   @media (max-width: 880px) {
     .column-header { cursor: pointer; }
   }
 
   .column-header .stage-name {
-    font-weight: 600;
-    font-size: 12.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+    font-weight: 700;
+    font-size: 15px;
     color: var(--ink);
-  }
-
-  .column-header .count-pill {
-    background: var(--bg);
-    color: var(--muted);
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 20px;
-    min-width: 22px;
-    text-align: center;
   }
 
   .column-body {
@@ -213,7 +214,10 @@
     min-height: 90px;
     max-height: calc(100vh - 230px);
     overflow-y: auto;
+    transition: background 0.1s;
   }
+
+  .column-body.drag-over { background: var(--primary-light); outline: 2px dashed var(--primary); outline-offset: -2px; }
 
   @media (max-width: 880px) {
     .column-body { max-height: none; overflow-y: visible; }
@@ -224,13 +228,15 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 11px 12px;
-    cursor: pointer;
+    cursor: grab;
     font-size: 12.5px;
-    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s, opacity 0.15s;
   }
 
   .card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-1px); }
   .card.overdue { border-left: 3px solid var(--warn); }
+  .card.dragging { opacity: 0.4; cursor: grabbing; }
+  .card .rep { color: var(--muted); font-size: 11px; }
 
   .card .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 

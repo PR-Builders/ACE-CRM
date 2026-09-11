@@ -80,24 +80,37 @@
 
   // ---------- Pipeline ----------
 
+  var pipelineDataCache = null;
+  var draggedLeadId = null;
+
   function loadPipeline() {
-    google.script.run.withSuccessHandler(renderBoard).withFailureHandler(onError).getPipelineData();
+    google.script.run.withSuccessHandler(function (board) {
+      pipelineDataCache = board;
+      renderBoard(board);
+    }).withFailureHandler(onError).getPipelineData();
+  }
+
+  function matchesPipelineSearch(card, query) {
+    if (!query) return true;
+    var haystack = [card.Name, card.Phone, card.Source].join(' ').toLowerCase();
+    return haystack.indexOf(query) !== -1;
   }
 
   function renderBoard(board) {
+    var query = (document.getElementById('pipeline-search').value || '').toLowerCase().trim();
     var el = document.getElementById('board');
     el.innerHTML = '';
     STAGES.forEach(function (stage) {
-      var cards = board[stage] || [];
+      var cards = (board[stage] || []).filter(function (c) { return matchesPipelineSearch(c, query); });
       var stageValue = cards.reduce(function (sum, c) { return sum + (Number(c['Estimated Value']) || 0); }, 0);
       var col = document.createElement('div');
       col.className = 'column' + (cards.length ? '' : ' collapsed');
+      var dealWord = cards.length === 1 ? 'deal' : 'deals';
       col.innerHTML =
         '<div class="column-accent" style="background:' + (STAGE_COLORS[stage] || '#94a3b8') + '"></div>' +
         '<div class="column-header"><div class="column-header-top"><span class="stage-name">' + escapeHtml(stage) + '</span>' +
-        '<span class="count-pill">' + cards.length + '</span>' +
         '<svg class="chev mobile-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>' +
-        (stageValue ? '<div class="column-value">' + fmtMoney(stageValue) + ' total</div>' : '') +
+        '<div class="column-value">' + cards.length + ' ' + dealWord + (stageValue ? ' &middot; ' + fmtMoney(stageValue) : '') + '</div>' +
         '</div>' +
         '<div class="column-body"></div>';
       col.querySelector('.column-header').addEventListener('click', function () {
@@ -111,6 +124,7 @@
         var overdue = isPastDue(card['Next Follow-Up Date']);
         var div = document.createElement('div');
         div.className = 'card' + (overdue ? ' overdue' : '');
+        div.draggable = true;
         div.innerHTML =
           '<div class="card-top">' +
             '<div class="avatar">' + escapeHtml(initials(card.Name)) + '</div>' +
@@ -120,13 +134,38 @@
           '<div class="meta"><span class="badge">' + escapeHtml(card.Source || '') + '</span>' +
           (card['Estimated Value'] ? '<span class="value">' + fmtMoney(card['Estimated Value']) + '</span>' : '') +
           '<span class="days-tag' + (card.daysInStage > 7 ? ' days-warn' : '') + '">' + card.daysInStage + 'd in stage</span></div>' +
-          (overdue ? '<div class="followup-overdue">&#9888; Follow-up overdue</div>' : '');
+          (overdue ? '<div class="followup-overdue">&#9888; Follow-up overdue</div>' : '') +
+          (card['Assigned To'] ? '<div class="rep">' + escapeHtml(card['Assigned To']) + '</div>' : '');
         div.addEventListener('click', function () { openDetail(card['Lead ID']); });
+        div.addEventListener('dragstart', function (e) {
+          draggedLeadId = card['Lead ID'];
+          div.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', card['Lead ID']);
+        });
+        div.addEventListener('dragend', function () { div.classList.remove('dragging'); draggedLeadId = null; });
         body.appendChild(div);
       });
+
+      body.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        body.classList.add('drag-over');
+      });
+      body.addEventListener('dragleave', function () { body.classList.remove('drag-over'); });
+      body.addEventListener('drop', function (e) {
+        e.preventDefault();
+        body.classList.remove('drag-over');
+        var leadId = draggedLeadId || e.dataTransfer.getData('text/plain');
+        if (!leadId) return;
+        moveStage(leadId, stage, false);
+      });
+
       el.appendChild(col);
     });
   }
+
+  on('pipeline-search', 'input', function () { if (pipelineDataCache) renderBoard(pipelineDataCache); });
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, function (c) {
@@ -300,10 +339,10 @@
     }).join('');
   }
 
-  function moveStage(leadId, stage) {
+  function moveStage(leadId, stage, reopenDetail) {
     google.script.run.withSuccessHandler(function () {
       showToast('Moved to ' + stage);
-      openDetail(leadId);
+      if (reopenDetail !== false) openDetail(leadId);
       refreshCurrentView();
     }).withFailureHandler(onError).updateLeadStage(leadId, stage, '');
   }
