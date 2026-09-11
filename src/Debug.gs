@@ -13,11 +13,15 @@ function setScriptProperty(key, value) {
 /** clasp run checkMetaConfig — confirms both are set without ever printing the token itself. */
 function checkMetaConfig() {
   var config = getConfig_();
-  return {
+  var result = {
     pixelIdSet: !!config.metaPixelId,
     pixelId: config.metaPixelId,
     accessTokenSet: !!config.metaAccessToken,
     accessTokenLength: config.metaAccessToken.length,
     testEventCodeSet: !!config.metaTestEventCode
   };
+  // The Apps Script editor's execution log only shows Logger output, not
+  // return values — log it explicitly so Run > Executions actually shows this.
+  Logger.log(JSON.stringify(result));
+  return result;
 }
