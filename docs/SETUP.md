@@ -134,6 +134,40 @@ Re-running `installTriggers()` is safe — it clears old copies first.
 Copy the deployment's `/exec` URL — staff use it directly for the app UI,
 and it's also the POST target for the website form and any webhooks.
 
+### Making future pushes go live automatically
+
+By default `clasp push` only updates the code *saved* in the Apps Script
+project — it does **not** update what your `/exec` URL actually serves.
+That's a separate step (redeploying the existing deployment to a new
+version), and forgetting it is the most common reason "I pushed a fix but
+nothing changed" happens. `npm run release` does both in one command
+instead of `npm run push`:
+
+1. One-time setup: find your deployment's ID —
+   ```bash
+   npx clasp deployments
+   ```
+   It lists every deployment; find the one whose `/exec` URL matches what
+   you actually use, and copy its ID (starts with `AKfyc...`). Save it:
+   ```bash
+   echo "AKfyc...your-deployment-id..." > .clasp-deployment-id
+   ```
+   (This file is gitignored — it's local machine config, not code.)
+2. From then on, use `npm run release` instead of `npm run push` whenever
+   you want a change to actually go live. It pushes the code *and* points
+   your existing `/exec` URL at the new version, so there's no separate
+   "Manage deployments" step to remember.
+
+### Confirming a deploy went live
+
+The sidebar footer (and, on mobile, the top bar) shows a version string
+like `v2026-09-11.1`, pulled from `APP_VERSION` in `Constants.gs`. Bump
+that string any time you push a change meant to go live. After running
+`npm run release`, hard-refresh the app and check that number — if it
+didn't change, the deploy didn't actually take effect, and it's worth
+re-running `npx clasp deployments` to confirm `.clasp-deployment-id`
+still points at the right one.
+
 ## 7. Wire up the website
 
 Add `website-snippet/utm-capture.js` to the marketing site (e.g. in the

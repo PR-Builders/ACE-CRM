@@ -10,6 +10,7 @@
     "pull": "clasp pull",
     "open": "clasp open",
     "deploy": "clasp deploy",
+    "release": "clasp push && clasp deploy -i \"$(cat .clasp-deployment-id)\" -d \"release $(date '+%Y-%m-%d %H:%M')\"",
     "logs": "clasp logs"
   },
   "devDependencies": {

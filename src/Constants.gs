@@ -8,6 +8,15 @@ var LEADS_SHEET = 'Leads';
 var ACTIVITIES_SHEET = 'Activities';
 var STAGE_TEMPLATES_SHEET = 'Stage Templates';
 
+/**
+ * Shown in the app's sidebar/mobile footer so you can tell at a glance
+ * whether a deploy actually took effect: if you push+deploy a change and
+ * this string on the live page doesn't change, the deployment didn't take
+ * (see docs/SETUP.md - "Confirming a deploy went live"). Bump this any time
+ * you push a change meant to go live.
+ */
+var APP_VERSION = '2026-09-11.1';
+
 var LEAD_HEADERS = [
   'Lead ID', 'Name', 'Email', 'Phone', 'Address', 'Source', 'Source Detail',
   'Contact Method', 'Estimated Value', 'Actual Value', 'Lost Reason',
