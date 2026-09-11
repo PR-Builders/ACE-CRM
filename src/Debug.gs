@@ -26,13 +26,15 @@ function debugGetLead() {
   var ids = sheet.getRange(2, idCol + 1, lastRow - 1, 1).getValues();
   Logger.log('Lead IDs in sheet: ' + JSON.stringify(ids.map(function (r) { return r[0]; })));
 
-  var testId = ids[0][0];
-  Logger.log('Trying getLead("' + testId + '")...');
-  try {
-    var result = getLead(testId);
-    Logger.log('SUCCESS. Result: ' + JSON.stringify(result));
-  } catch (e) {
-    Logger.log('THREW: ' + e.message);
-    Logger.log('STACK: ' + e.stack);
-  }
+  ids.forEach(function (row) {
+    var testId = row[0];
+    Logger.log('--- Trying getLead("' + testId + '")...');
+    try {
+      var result = getLead(testId);
+      Logger.log('SUCCESS. Result: ' + JSON.stringify(result));
+    } catch (e) {
+      Logger.log('THREW: ' + e.message);
+      Logger.log('STACK: ' + e.stack);
+    }
+  });
 }
