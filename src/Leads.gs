@@ -8,8 +8,13 @@
  * @param {Object} data Fields from the intake form, website POST, or call-tracking webhook.
  * @param {boolean} viaWebsite When true, applies UTM/gclid/fbclid attribution
  *   auto-detection and the submit-button-disclosure SMS consent capture.
+ * @param {string} [pageUrl] The page the website form was actually submitted from
+ *   (data.landing_url from the POST). Only meaningful when viaWebsite is true --
+ *   passed to Meta CAPI as event_source_url so the initial Lead event is tagged
+ *   action_source="website" (a live browser action) rather than
+ *   "system_generated" (Meta's own recommendation for backend-originated events).
  */
-function createLead(data, viaWebsite) {
+function createLead(data, viaWebsite, pageUrl) {
   var isCallPlaceholder = data['Contact Method'] === 'Call';
   if (!isCallPlaceholder) {
     ['Name', 'Email', 'Phone'].forEach(function (field) {
@@ -64,7 +69,7 @@ function createLead(data, viaWebsite) {
   runStageAutomation_(lead, 'Leads');
 
   if (lead['FBCLID']) {
-    sendMetaEvent_(lead, 'Lead');
+    sendMetaEvent_(lead, 'Lead', undefined, viaWebsite ? pageUrl : undefined);
   }
 
   return lead;

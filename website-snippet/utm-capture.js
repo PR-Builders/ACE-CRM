@@ -87,7 +87,14 @@
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending…'; }
     setStatus(form, '', false);
 
-    fetch(form.action, { method: 'POST', mode: 'no-cors', body: new FormData(form) })
+    // The page the form was actually submitted from — passed through to the
+    // CRM so a Meta Conversions API "Lead" event (when an fbclid is present)
+    // can be tagged action_source="website" with this as event_source_url,
+    // instead of the less-specific "system_generated".
+    var formData = new FormData(form);
+    formData.set('landing_url', window.location.href);
+
+    fetch(form.action, { method: 'POST', mode: 'no-cors', body: formData })
       .then(function () {
         setStatus(form, "Thanks - we've got your request and will be in touch soon.", false);
         form.reset();

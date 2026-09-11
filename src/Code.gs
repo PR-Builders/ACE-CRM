@@ -63,7 +63,7 @@ function routePost_(params) {
 
   // Default: website contact form submission (manual entry goes through
   // google.script.run -> createLead directly, not through doPost).
-  return createLead(mapWebsiteFormFields_(params), true);
+  return createLead(mapWebsiteFormFields_(params), true, params.landing_url);
 }
 
 function requireSharedSecret_(params, config) {

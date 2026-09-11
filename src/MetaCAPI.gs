@@ -8,7 +8,7 @@
  * requirement that raw PII never be sent.
  */
 
-function sendMetaEvent_(lead, eventName, valueOverride) {
+function sendMetaEvent_(lead, eventName, valueOverride, eventSourceUrl) {
   var config = getConfig_();
   if (!config.metaPixelId || !config.metaAccessToken) return { skipped: true, reason: 'Meta CAPI not configured' };
 
@@ -20,10 +20,15 @@ function sendMetaEvent_(lead, eventName, valueOverride) {
   var eventData = {
     event_name: eventName,
     event_time: Math.floor(Date.now() / 1000),
-    action_source: 'system_generated',
+    // "website" (with the real page URL) for events tied to a live browser
+    // action, e.g. the initial website form submission; "system_generated"
+    // for everything else (stage-change-driven events with no webpage
+    // involved) -- per Meta's Conversions API guidance on action_source.
+    action_source: eventSourceUrl ? 'website' : 'system_generated',
     event_id: lead['Lead ID'] + ':' + eventName,
     user_data: userData
   };
+  if (eventSourceUrl) eventData.event_source_url = eventSourceUrl;
 
   var value = valueOverride !== undefined ? valueOverride : lead['Estimated Value'];
   if (value) {
