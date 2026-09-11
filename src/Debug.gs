@@ -38,3 +38,24 @@ function debugGetLead() {
     }
   });
 }
+
+/**
+ * Bisection probes for the "RPC success handler receives null" bug. Paste
+ * these one at a time into the CRM page's browser console (after it's
+ * loaded) — no UI button needed, google.script.run is already on the page:
+ *
+ *   google.script.run.withSuccessHandler(r => console.log('ECHO:', r)).withFailureHandler(e => console.log('ECHO ERR:', e)).debugEcho('hello');
+ *   google.script.run.withSuccessHandler(r => console.log('PING:', r)).withFailureHandler(e => console.log('PING ERR:', e)).debugSheetPing();
+ *
+ * debugEcho touches nothing but the RPC bridge itself. debugSheetPing adds
+ * one minimal Spreadsheet read. Whichever one comes back null (if either)
+ * tells us which layer the bug is actually in.
+ */
+function debugEcho(value) {
+  return { echoed: value, receivedType: typeof value, timestamp: new Date().toISOString() };
+}
+
+function debugSheetPing() {
+  var sheet = getSheet_(LEADS_SHEET);
+  return { ok: true, lastRow: sheet.getLastRow(), sheetName: sheet.getName() };
+}
