@@ -59,3 +59,25 @@ function debugSheetPing() {
   var sheet = getSheet_(LEADS_SHEET);
   return { ok: true, lastRow: sheet.getLastRow(), sheetName: sheet.getName() };
 }
+
+/** debugSheetPing works but getLeadsList doesn't — these isolate why:
+ * a top-level array, a raw Date object, and the real per-lead shape
+ * (minus the Date fields) each in isolation. */
+function debugReturnArray() {
+  return [{ a: 1, name: 'x' }, { a: 2, name: 'y' }];
+}
+
+function debugReturnDate() {
+  return { created: new Date(), label: 'test' };
+}
+
+function debugReturnOneLeadNoDates() {
+  var leads = getAllLeads_();
+  if (!leads.length) return { note: 'no leads' };
+  var lead = leads[0];
+  var stripped = {};
+  Object.keys(lead).forEach(function (k) {
+    stripped[k] = (Object.prototype.toString.call(lead[k]) === '[object Date]') ? String(lead[k]) : lead[k];
+  });
+  return stripped;
+}
