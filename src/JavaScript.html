@@ -175,17 +175,22 @@
   var leadsListCache = [];
 
   function loadLeadsList() {
+    console.log('loadLeadsList: calling getLeadsList...');
     google.script.run.withSuccessHandler(function (leads) {
-      leadsListCache = leads;
+      console.log('getLeadsList SUCCESS handler received:', leads);
+      leadsListCache = leads || [];
       renderLeadsList();
-    }).withFailureHandler(onError).getLeadsList();
+    }).withFailureHandler(function (err) {
+      console.log('getLeadsList FAILURE handler received:', err);
+      onError(err);
+    }).getLeadsList();
   }
 
   function renderLeadsList() {
     var query = (document.getElementById('leads-search').value || '').toLowerCase().trim();
     var statusFilter = document.getElementById('leads-status-filter').value;
 
-    var filtered = leadsListCache.filter(function (lead) {
+    var filtered = (leadsListCache || []).filter(function (lead) {
       if (statusFilter && lead.Status !== statusFilter) return false;
       if (!query) return true;
       var haystack = [lead.Name, lead.Phone, lead.Email, lead.Address, lead.Source].join(' ').toLowerCase();
