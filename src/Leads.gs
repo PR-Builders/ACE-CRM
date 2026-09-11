@@ -86,12 +86,12 @@ function applyWebsiteAttribution_(lead) {
 function getLead(leadId) {
   var found = findLeadRow_(leadId);
   if (!found) throw new Error('Lead not found: ' + leadId);
-  return { lead: found.obj, activities: getActivitiesForLead(leadId) };
+  return serializeDates_({ lead: found.obj, activities: getActivitiesForLead(leadId) });
 }
 
 /** All leads, any status — feeds the flat, searchable Leads table view. */
 function getLeadsList() {
-  return getAllLeads_();
+  return serializeDates_(getAllLeads_());
 }
 
 function getAllLeads_() {
@@ -123,7 +123,7 @@ function getPipelineData() {
     };
     if (board[lead.Stage]) board[lead.Stage].push(card);
   });
-  return board;
+  return serializeDates_(board);
 }
 
 function daysInStage_(lead) {

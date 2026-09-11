@@ -30,7 +30,7 @@ function getDashboardStats() {
       };
     });
 
-  return {
+  return serializeDates_({
     activeCount: active.length,
     pipelineValue: sumValues_(active, 'Estimated Value'),
     closedThisMonthCount: closedThisMonth.length,
@@ -39,7 +39,7 @@ function getDashboardStats() {
     newThisWeekCount: newThisWeek.length,
     conversionRate: leads.length ? Math.round((closedTotal / leads.length) * 1000) / 10 : 0,
     needsAttention: needsAttention
-  };
+  });
 }
 
 function getSourceReport() {

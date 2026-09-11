@@ -108,3 +108,25 @@ function startOfDay_(date) {
 function hoursSince_(date) {
   return (new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60);
 }
+
+/**
+ * Recursively converts every Date instance in a value to an ISO string.
+ * Apps Script's google.script.run bridge silently delivers null to the
+ * client's success handler when a raw Date object is anywhere in the
+ * returned value (confirmed by direct testing — see Debug.gs), even though
+ * the same function returns correctly when called server-side. Every RPC
+ * entry point that returns Sheet-sourced data (Created Date, Last Updated,
+ * Next Follow-Up Date, activity Timestamps, etc. all come back from
+ * getValues() as real Date objects) must pass its return value through
+ * this before returning.
+ */
+function serializeDates_(value) {
+  if (value instanceof Date) return value.toISOString();
+  if (Array.isArray(value)) return value.map(serializeDates_);
+  if (value && typeof value === 'object') {
+    var out = {};
+    Object.keys(value).forEach(function (k) { out[k] = serializeDates_(value[k]); });
+    return out;
+  }
+  return value;
+}
